@@ -1,0 +1,17 @@
+Package: journalabbr
+Type: Package
+Title: Journal abbreviations for BibTex documents
+Version: 0.1.0
+Authors@R: person("zsc",email = "zscmoyujian@163.com",role =c("aut","cre"))
+Description: The journal field (case insensitive) of BibTex file is replaced by built-in journal abbreviation table to achieve the purpose of journal abbreviation.
+License: GPL-3
+URL: https://github.com/zoushucai/journalabbr
+BugReports: http://github.com/zoushucai/journalabbr/issues
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 3.1.1)
+Imports: data.table, bib2df, stringr, dplyr, purrr, stringi, usethis, rlang, httr
+Suggests: testthat, knitr, rmarkdown, ggplot2, tidyr
+RoxygenNote: 7.1.0
+Date: 2020-07-06
