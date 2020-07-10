@@ -74,7 +74,7 @@ combine_journal_lists = function(putjabref = FALSE){
   setnames(dt_lower,c("journal","journal_abbr"),c('journal','journal_abbr'))
   dt_lower[,journal_lower :=str_trim(str_to_lower(journal),side = 'both')] # 变量名为journal_lower 代表期刊的小写
   ##### 找出期刊中缩写项带点的个数,----  变量名 count_dot 用计数,期刊缩写带点的个数
-  dt_lower[,count_dot := unlist(lapply(journal_abbr,function(x)str_count(x,'\\.')))]
+  dt_lower[,count_dot := str_count(journal_abbr,'\\.')]
   #### 按照journal_lower期刊进行分组,并找出各个分组中 count_dot 值最大的行
   dt_lower_unique = dt_lower[dt_lower[, .I[which.max(count_dot)], by = journal_lower]$V1]
   #方法二: 慢:---dt_lower[, .SD[which.max(count_dot)], by = lower_journal] #168512

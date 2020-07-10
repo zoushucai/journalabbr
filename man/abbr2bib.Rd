@@ -2,41 +2,46 @@
 % Please edit documentation in R/abbr2bib.R
 \name{abbr2bib}
 \alias{abbr2bib}
-\title{The BibTeX \code{tibble} is written to a .bib file}
+\title{Journal field abbreviation of BibTeX file}
 \usage{
-abbr2bib(file, outfile_abbr = "abbr.bib", separate_names = FALSE)
+abbr2bib(
+  file = path,
+  outfile = tempfile(fileext = ".bib"),
+  separate_names = FALSE
+)
 }
 \arguments{
-\item{file}{character, path or URL to a .bib file.}
+\item{file}{character, input a .bib file.}
 
-\item{outfile_abbr}{character, file path to write the .bib file. An empty character string writes to \code{stdout} (default).}
+\item{outfile}{character, file path to write the .bib file. An empty character string writes to \code{stdout} (default).}
 
 \item{separate_names}{logical, should authors' and editors' names be separated into first and given name?}
 }
 \value{
 {
-Return to a list and  output the BibTex file after the abbreviation of Journal.
+output a new Bib file in the current directory,
+which only abbreviates the journal fields, and the rest remains unchanged.
+The default new file name is \code{abbr.bib}. And return to a list.
 List consists of three data structures as follows:
 }
 \describe{
-\item{abbrtable}{A data.table, the abbreviation table of journal}
+\item{abbrtable}{A data.table, Bib abbreviation table of all items, where NA means that there is no journal field in a bib}
 \item{noabbr}{A data.table, No abbreviated journals found}
 \item{noindex}{A vector, Index corresponding to noabbr}
 }
 }
 \description{
-Input Bib file with complete journal, output Bib file after abbreviation of journa, and return to the abbreviation table of journal
+Input Bib file with complete journal, output Bib file after abbreviation of journal, and return to the abbreviation table of journal
 }
 \examples{
-\dontrun{
-library(journalabbr)
+require(journalabbr)
 path = system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
-abbr2bib(file = path,outfile_abbr= "abbr.bib")
+temptab = abbr2bib(file = path, outfile =  tempfile(fileext = ".bib"))
+
 }
-}
-\keyword{BibTex}
 \keyword{List}
 \keyword{abbreviations}
+\keyword{bib}
 \keyword{file}
 \keyword{for}
 \keyword{input}

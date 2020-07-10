@@ -1,14 +1,14 @@
-## 功能
+## Function
 
-针对bibtex 文件中的`journal` 字段实现期刊缩写
+Implementing journal abbreviation for the 'Journal' field in BibTex file
 
-## 安装
+## Install
 
 ```R
 devtools::install_github("zhoushucai/journalabbr")
 ```
 
-## 使用
+## Use
 
 ```{r}
 library(journalabbr)
