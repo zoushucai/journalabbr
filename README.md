@@ -13,7 +13,6 @@ devtools::install_github("zhoushucai/journalabbr")
 ```{r}
 library(journalabbr)
 path = system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
-abbr2bib(file = path,outfile_abbr= "abbr.bib")
-
+temptab = abbr2bib(file = path, outfile =  tempfile(fileext = ".bib"))
 ```
 

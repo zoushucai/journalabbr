@@ -29,7 +29,7 @@
 #' temptab = abbr2bib(file = path, outfile =  tempfile(fileext = ".bib"))
 #'
 
-abbr2bib <- function(file = path, outfile = tempfile(fileext = ".bib"), separate_names = FALSE) {
+abbr2bib <- function(file, outfile = tempfile(fileext = ".bib"), separate_names = FALSE) {
   # if (!is.character(file)) {
   #   stop("Invalid file path: Non-character supplied.", call. = FALSE)
   # }

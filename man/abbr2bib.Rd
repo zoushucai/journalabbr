@@ -4,11 +4,7 @@
 \alias{abbr2bib}
 \title{Journal field abbreviation of BibTeX file}
 \usage{
-abbr2bib(
-  file = path,
-  outfile = tempfile(fileext = ".bib"),
-  separate_names = FALSE
-)
+abbr2bib(file, outfile = tempfile(fileext = ".bib"), separate_names = FALSE)
 }
 \arguments{
 \item{file}{character, input a .bib file.}
