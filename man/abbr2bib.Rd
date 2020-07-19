@@ -4,14 +4,12 @@
 \alias{abbr2bib}
 \title{Journal field abbreviation of BibTeX file}
 \usage{
-abbr2bib(file, outfile = tempfile(fileext = ".bib"), separate_names = FALSE)
+abbr2bib(file, outfile = tempfile(fileext = ".bib"))
 }
 \arguments{
 \item{file}{character, input a .bib file.}
 
 \item{outfile}{character, file path to write the .bib file. An empty character string writes to \code{stdout} (default).}
-
-\item{separate_names}{logical, should authors' and editors' names be separated into first and given name?}
 }
 \value{
 {
