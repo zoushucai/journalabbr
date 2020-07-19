@@ -8,20 +8,20 @@ write_tib2bib(
   tib,
   file = tempfile(fileext = ".bib"),
   append = FALSE,
-  iscorrect = TRUE,
-  connect_author = c("", "\\\\\\\\&", "&", "and")
+  isformat = TRUE,
+  connect_author = c("nothing", "\\\\\\\\&", "&", "and")
 )
 }
 \arguments{
 \item{tib}{\code{tibble}, in the format as returned by \code{\link{read_bib2tib}}.}
 
-\item{file}{character, file path to write the .bib file. An empty character string writes to \code{stdout} (default).}
+\item{file}{character, file path to write the .bib file.}
 
 \item{append}{logical, if \code{TRUE} the \code{tibble} will be appended to an existing file.}
 
-\item{iscorrect}{logical, if \code{TRUE} the  Fields in \code{tibble} will complete braces to make them appear in pairs.}
+\item{isformat}{logical, if \code{TRUE} the  Fields in \code{tibble} will complete braces to make them appear in pairs.}
 
-\item{connect_author}{character, what symbols are used to connect multiple authors, \code{'','\\\\&', '&', 'and'}, where \code{''} stand for do nothing(default).}
+\item{connect_author}{character, what symbols are used to connect multiple authors, \code{'nothing','\\\\&', '&', 'and'}, where \code{'nothing'} stand for do nothing(default).}
 }
 \value{
 \code{file} as a character string, invisibly.
@@ -31,12 +31,4 @@ The BibTeX \code{tibble} is written to a .bib file.
 }
 \examples{
 # Read from .bib file:
-require(journalabbr)
-path = system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
-bib <- read_bib2tib(path)
-
-# Write to .bib file:
-write_tib2bib(bib, file = tempfile(fileext = ".bib"))
-
-# Use `append = TRUE` to add lines to an existing .bib file:
 }

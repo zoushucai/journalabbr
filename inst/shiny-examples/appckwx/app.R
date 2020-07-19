@@ -5,9 +5,9 @@ library(knitr)
 library(rmarkdown)
 library(purrr)
 library(dplyr)
-library(stringr)
 library(tinytex)
 library(DT)
+library(journalabbr)
 # shiny app  的未来版本
 #library(lubridate)
 #options(shiny.fullstacktrace = TRUE)
@@ -146,7 +146,6 @@ extract_key = function(texfile){
   #### 1.开始读取原始的tex文件,并提取key---- 准备形成 rmd 的后半部分
   ###############################################
   document <- readLines(texfile,encoding = "UTF-8")
-
   document = str_replace_all(document,'^[[:blank:]]*?%.*','')# 删除以% 开头的所有内容
   document = str_replace_all(document,'([^\\\\])(%.*)','\\1') # 删除前面不是以\\开始的% 以后的所有内容
   document = document[which(document != '')] %>% paste(collapse = ' ')
@@ -168,14 +167,32 @@ ui <- fluidPage(
                fileInput("file1_tex", "Choose tex File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.tex')),
                fileInput("file2_csl", "Choose csl File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.csl')),
                fileInput("file3_bib", "Choose bib File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.bbl')),
-               radioButtons("bibabbr", "是否对期刊文献进行缩写:",
-                            choiceNames = list(
-                              'yes','no'
-                            ),
-                            choiceValues = list(
-                              'one1','zero0'
-                            )
+
+               fluidRow(
+                 column(4,
+                        selectInput("bibabbr", "是否只对期刊文献进行缩写:",
+                                    choices = c(
+                                      'yes' = TRUE,
+                                      'no' = FALSE),
+                                    selected = TRUE)
+                 ),
+                 column(4,
+                        selectInput('bibformat', '是否美化bib文件(否,则多个作者处理无效)',
+                                    choices = c('no' = FALSE,
+                                                'yes' = TRUE),
+                                    selected = FALSE)
+                 ),
+                 column(4,
+                        selectInput("connectauthor", "多个作者处理",
+                                    choices = c('nothing' = "nothing",
+                                                'and' = 'and',
+                                                '\\\\&' = '\\\\&',
+                                                '&' = '&' ),
+                                    selected = "nothing")
+                 )
                ),
+
+
                actionButton("goButton", "Submit")
              )),
     tabPanel("Warning",
@@ -248,24 +265,35 @@ server <- function(input, output) {
   ###0. 处理 bib 文件, csl, tex 文件
   randomVals <- eventReactive(input$goButton, {
     clear_file()
+
     tryCatch(
       {
-        file_csl = readLines(input$file2_csl$datapath,encoding = "UTF-8")
+        texpath = input$file1_tex$datapath
+        clspath = input$file2_csl$datapath
+        bibpath = input$file3_bib$datapath
+
+        texpath = '/Users/zsc/Desktop/rmdtest/shinytest/FlexilityDTFSTwoC.tex'
+        clspath = '/Users/zsc/Desktop/rmdtest/shinytest/ieee-transactions-on-cybernetics.csl'
+        bibpath = "/Users/zsc/Desktop/rmdtest/shinytest/real3.bib"
+
+        file_csl = readLines(clspath,encoding = "UTF-8")
         writeLines(file_csl,'./navigation_default.csl')
 
-        file_bib = readLines(input$file3_bib$datapath,encoding = "UTF-8")
+
+        file_bib = readLines(bibpath,encoding = "UTF-8")
         file_bib = c('\n',file_bib,'\n')# 对第一个参考文献添加换行,与最后一个参考文件添加换行
         writeLines(file_bib,'./MEMIO_default.bib')
-        if (input$bibabbr == 'one1'){
-          # if(!suppressWarnings(require('journalabbr'))){
-          #   devtools::install_github("zhoushucai/journalabbr")
-          # }
-          abbrtable =  abbr2bib("./MEMIO_default.bib",'MEMIO_default2.bib')
-          file.copy('MEMIO_default2.bib','MEMIO_default.bib',overwrite = T)
-        }else if(input$bibabbr == 'zero0'){
-          abbrtable = NULL;
-        }else{
-          stop('出错')
+        if (input$bibabbr == "TRUE"){
+          abbrtable =  journalabbr::abbr2bib(file = "MEMIO_default.bib",
+                                             outfile = 'MEMIO_default.bib')
+        }
+        if (input$bibformat == "TRUE"){
+          templogic2 = eval(parse(text = input$bibformat))
+          temptib = journalabbr::read_bib2tib(file = 'MEMIO_default.bib')
+          journalabbr::write_tib2bib(temptib,file = 'MEMIO_default.bib',
+                                     append = FALSE,
+                                     isformat = templogic2,
+                                     connect_author = input$connectauthor )
         }
       },
       error = function(e) {
@@ -277,13 +305,10 @@ server <- function(input, output) {
 
     ###############################################
     #### 1 , 开始读取原始的tex文件,并提取key---- 准备形成 rmd 的后半部分
-    tex_key = extract_key(texfile = input$file1_tex$datapath)
-    #tex_key = extract_key(texfile = '/Users/zsc/Desktop/rmdtest/weakfuzzyaik.tex')
+    tex_key = extract_key(texfile = texpath )
     ################################################
     ###### 2. 提取 bib文件,把key和type组合成数据框
-    #abbrtable =  journalabbr::abbr2bib("/Users/zsc/Desktop/rmdtest/weakfuzzyaik.bib",'./MEMIO_default.bib')
-    tib = read_bib2tib(file = 'MEMIO_default.bib',isabbr = F)
-
+    tib = journalabbr::read_bib2tib(file = 'MEMIO_default.bib')
     tex_key_df = tibble::tibble('key' = tex_key, 'name' = 1:length(tex_key))
     df =  dplyr::full_join(tex_key_df,tib, by =c("key"= "keybib"),suffix = c("_tex","_bib"))
 
@@ -311,7 +336,7 @@ server <- function(input, output) {
     progress$set(message = "正在计算中,请耐心等待!!!", value = 0)
     rmarkdown::render("rmd_finally.Rmd", output_format = latex_document())
     value = style_fun(texfile = 'rmd_finally.tex')
-    clear_file()
+    #clear_file()
     return(value)
   })
 
@@ -325,8 +350,10 @@ server <- function(input, output) {
   ############### 输出警告函数,----- 即 tex中有引用,但是bib数据库中不存在该参考文献  ###############
   output$out_warning <- renderText({
     df = randomVals() # 返回一个list
-    if(length(df)>1){
+    if(length(df)>1& rlang::is_empty(warnings())){
       return('无')
+    }else{
+      warnings()
     }
   })
 

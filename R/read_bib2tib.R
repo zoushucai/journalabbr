@@ -1,9 +1,8 @@
 #' @title Parse a BibTeX file to a \code{tibble}
-#' @description The BibTeX file is read, parsed, tidied and written to a \code{tibble}
-#' @details For simplicity \code{read_bib2tib()} unifies the reading, parsing and tidying of a BibTeX file while being aware of a standardized output format, different BibTeX styles and missing values in the BibTeX file.
+#' @description The BibTeX file is read, parsed, tidied and written to a \code{tibble}.
+#' @details Read, parse and collate bibtex file to form a Tibble. Different BIB may produce different tibble columns.
 #' @param file character, path or URL to a .bib file.
-#' @param isabbr logical,  if \code{TRUE}, If true, two columns \code{journal_abbr} and \code{originFile} will be added. \code{journal_abbr} is the abbreviation for the journal and \code{originFile} is the source of the abbreviated journal
-#' @seealso \code{\link{abbrTable}}
+#' @seealso \code{\link{abbrTable}}.
 #' @return A \code{tibble}.
 #'
 #' @importFrom stringr str_replace_all str_extract str_trim str_split str_to_lower
@@ -21,7 +20,8 @@
 #' str(bib)
 #' @export
 
-read_bib2tib = function(file,isabbr=FALSE){
+
+read_bib2tib = function(file){
   if (!is.character(file)) {
     stop("Invalid file path: Non-character supplied.", call. = FALSE)
   }
@@ -126,8 +126,11 @@ read_bib2tib = function(file,isabbr=FALSE){
   # # 检查keybib键 是否有重复(去除NA值以后的keybib)
   temp = NULL
   temp =  unlist(map(item_tib$keybib, function(x)!is.na(x)))
+  temp = item_tib$keybib[temp]
   if(any(duplicated(temp))){
-    warning('Duplicate key in uploaded Bib file')
+    s =     paste0(temp[duplicated(temp)],collapse = '\n')
+    s = paste0('Duplicate key in uploaded Bib file\n',s)
+    warning(s)
   }
   rm(temp)
   ###  4.2 提取typebib --- 提取条目类型 第一行必须是@***{*** 形式, 提取@***{ 的所有内容,
@@ -170,20 +173,6 @@ read_bib2tib = function(file,isabbr=FALSE){
       temp = which(x[,1] == ii) #grep(ii,x[,1] )
       ifelse(!is_empty(temp),x[temp[1],2], NA) # 如果标题有相同的,则取第一个即可
     })
-  }
-
-  if(isabbr){
-    item_tib[['journal_lower']] = NA
-    item_tib$journal_lower = purrr::map_chr(item_tib$JOURNAL,function(x){
-        temp = str_trim(str_to_lower(x),side = 'both')
-        gsub("[\t ]{2,}"," ", temp)
-    })
-
-    abbrTableSub = tibble::as_tibble(abbrTable)
-    abbrTableSub = abbrTableSub[,c("journal_lower",'journal_abbr','originFile')]
-    tib = dplyr::left_join(item_tib, abbrTableSub, by = "journal_lower")
-    tib[["journal_lower"]] = NULL
-    return(tib)
   }
   return(item_tib)
 }

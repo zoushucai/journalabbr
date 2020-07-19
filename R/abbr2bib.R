@@ -54,7 +54,15 @@ abbr2bib <- function(file, outfile = tempfile(fileext = ".bib")) {
 
   ############################################################
   ########### Read file -- establish corresponding relationship with built-in database
-  tib = read_bib2tib(file,isabbr = TRUE) %>% as.data.frame()
+  item_tib = read_bib2tib(file)
+  item_tib$journal_lower = purrr::map_chr(item_tib$JOURNAL,function(x){
+    temp = str_trim(str_to_lower(x),side = 'both')
+    gsub("[\t ]{2,}"," ", temp)
+  })
+  abbrTableSub = tibble::as_tibble(abbrTable)
+  abbrTableSub = abbrTableSub[,c("journal_lower",'journal_abbr','originFile')]
+  tib = dplyr::left_join(item_tib, abbrTableSub, by = "journal_lower")
+
   tib = tib[,c("JOURNAL","journal_abbr","originFile")]
   #########################################################
   #### If the abbreviation cannot be found,
@@ -91,7 +99,10 @@ abbr2bib <- function(file, outfile = tempfile(fileext = ".bib")) {
       }
     }
   }
+
   writeLines(bib, con = outfile)
+  invisible(outfile)
+
   return(tib)
 }
 

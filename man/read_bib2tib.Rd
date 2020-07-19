@@ -4,21 +4,19 @@
 \alias{read_bib2tib}
 \title{Parse a BibTeX file to a \code{tibble}}
 \usage{
-read_bib2tib(file, isabbr = FALSE)
+read_bib2tib(file)
 }
 \arguments{
 \item{file}{character, path or URL to a .bib file.}
-
-\item{isabbr}{logical,  if \code{TRUE}, If true, two columns \code{journal_abbr} and \code{originFile} will be added. \code{journal_abbr} is the abbreviation for the journal and \code{originFile} is the source of the abbreviated journal}
 }
 \value{
 A \code{tibble}.
 }
 \description{
-The BibTeX file is read, parsed, tidied and written to a \code{tibble}
+The BibTeX file is read, parsed, tidied and written to a \code{tibble}.
 }
 \details{
-For simplicity \code{read_bib2tib()} unifies the reading, parsing and tidying of a BibTeX file while being aware of a standardized output format, different BibTeX styles and missing values in the BibTeX file.
+Read, parse and collate bibtex file to form a Tibble. Different BIB may produce different tibble columns.
 }
 \examples{
 # Read from .bib file:
@@ -28,7 +26,7 @@ bib <- read_bib2tib(path)
 str(bib)
 }
 \seealso{
-\code{\link{abbrTable}}
+\code{\link{abbrTable}}.
 }
 \author{
 ShuCai Zou
