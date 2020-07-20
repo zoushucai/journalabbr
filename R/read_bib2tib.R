@@ -54,7 +54,6 @@ read_bib2tib = function(file){
   ################################################
   ########### 2.  Bib file processing #####################
   ################################################
-  ####3.1  提取按照@ 的位置进行提取--形成tibble
   from <- which(str_extract(bib, "[:graph:]") == "@")
   to  <- c(from[-1] - 1, length(bib))
   if (!length(from)) {
@@ -69,19 +68,18 @@ read_bib2tib = function(file){
 
   item_tib =  tibble::enframe(itemslist,name = "sitenum", value = "value")
 
-  ####3.2 对 形成的tibble 数据库进行处理
   item_tib$rawchar = NA
   item_tib$rawchar  = map(item_tib$value, function(x){
     str_trim(x,side = 'both')
-  })# 移除字符串两边的空格
+  })
 
   item_tib$rawchar  = map(item_tib$rawchar, function(x){
     gsub('[ \t]{2,}',' ',x)
-  })# 移除中间多余的空格
+  })
 
   len = map(item_tib$rawchar, function(x){
     max(grep('\\}',x))
-  })  # 移除最后出现的那个} 以外的所有内容
+  })
 
   dupl = sum(sapply(len, is.infinite))
   if (dupl > 0) {
@@ -92,29 +90,28 @@ read_bib2tib = function(file){
 
   item_tib$rawchar = map2(item_tib$rawchar, len, function(x,y){
     x[1:y]
-  })# 移除最后出现的那个右大括号} 以外的所有内容
+  })
   item_tib$rawchar  =  map(item_tib$rawchar, function(x){
-    gsub('(^,?)(.*?)(,?$)','\\2',x)  ## 移除两头两尾的逗号
+    gsub('(^,?)(.*?)(,?$)','\\2',x)
   })
 
   item_tib$rawchar  = map(item_tib$rawchar, function(x){
     x[which(x !='')]
-  })# 移除空行
+  })
 
-  # 且移除最后的那个右大括号}
   len = map(item_tib$rawchar, function(x){
-    max(grep('\\}',x))  # 移除最后出现的那个} 以外的所有内容
+    max(grep('\\}',x))
   })
   item_tib$rawchar = map2(item_tib$rawchar, len, function(x,y){
     x[y]=gsub('\\}$','',x[y]);x
   })
   item_tib$rawchar  = map(item_tib$rawchar, function(x){
     x[which(x !='')]
-  })# 再次移除空行
+  })
   #####################################################
-  ##### 4. 对 rawchar 这个list进行处理切割 --形成 两列 一列数字段 一列是值
+  ##### 4. for 'rawchar' list Processing cuts by '=' - form two columns
   ####################################################
-  ###  4.1 提取keybib 第一行必须是@***{*** 形式, 提取{以后的所有内容
+  ###  4.1 extract keybib
   item_tib$keybib = NA
   item_tib$keybib = purrr::map_chr(item_tib$rawchar,
                                    function(x) {
@@ -123,7 +120,7 @@ read_bib2tib = function(file){
                                    }
   )
 
-  # # 检查keybib键 是否有重复(去除NA值以后的keybib)
+  # Check if the keybib key is repeated after removing Na
   temp = NULL
   temp =  unlist(map(item_tib$keybib, function(x)!is.na(x)))
   temp = item_tib$keybib[temp]
@@ -133,7 +130,7 @@ read_bib2tib = function(file){
     warning(s)
   }
   rm(temp)
-  ###  4.2 提取typebib --- 提取条目类型 第一行必须是@***{*** 形式, 提取@***{ 的所有内容,
+  ###  4.2  extract typebib
   item_tib$typebib = NA
   item_tib$typebib = purrr::map_chr(item_tib$rawchar,
                                      function(x) {
@@ -142,19 +139,17 @@ read_bib2tib = function(file){
                                      })
   item_tib$typebib =  purrr::map_chr(item_tib$typebib , toupper)
 
-  ### 4.3 对其余字段进行切割---- 以 第一次出现等号(=)的地方为切割线,每个list都是两列的data.frame
+  ### 4.3 The rest of the fields are cut with the first occurrence of '='
   items = map(item_tib$rawchar,function(x){
     str_split(x[-1],'[ ]*=[ ]*', n = 2, simplify = T)
-  })  # 以第一次出现 = 的位置进行切割
-  #### 4.4 对每个list中的第一列进行处理 --- 转变为大写
+  })
   items = map(items,function(x){
     x[,1] = toupper(x[,1]);x
   })
-  #### 4.5 对每个list中的第二列的大括号和双引号进行成对删除 -- 防止多层嵌套--循环5次
   items = map(items,function(x){
     for(i in seq_len(1)){
       x[,2] = gsub('^(\\")(.*?)(\\")$',"\\2",x[,2])
-    }# 处理 双引号括起来的字符--一般情况下不会嵌套双引号
+    }
     x
   })
   items = map(items,function(x){
@@ -163,15 +158,13 @@ read_bib2tib = function(file){
     }
     x
   })
-
-  ## 对第一列的分类进行整合 --- 暂时不考虑排序
   categories_field = unlist(map(items,function(x)x[,1]))
 
   for (ii in categories_field) {
     item_tib[[ii]] = NA
     item_tib[[ii]] = map_chr(items,function(x){
-      temp = which(x[,1] == ii) #grep(ii,x[,1] )
-      ifelse(!is_empty(temp),x[temp[1],2], NA) # 如果标题有相同的,则取第一个即可
+      temp = which(x[,1] == ii)
+      ifelse(!is_empty(temp),x[temp[1],2], NA)
     })
   }
   return(item_tib)
