@@ -271,9 +271,9 @@ server <- function(input, output) {
         clspath = input$file2_csl$datapath
         bibpath = input$file3_bib$datapath
 
-        texpath = '/Users/zsc/Desktop/rmdtest/shinytest/FlexilityDTFSTwoC.tex'
-        clspath = '/Users/zsc/Desktop/rmdtest/shinytest/ieee-transactions-on-cybernetics.csl'
-        bibpath = "/Users/zsc/Desktop/rmdtest/shinytest/real3.bib"
+        # texpath = '/Users/zsc/Desktop/rmdtest/shinytest/FlexilityDTFSTwoC.tex'
+        # clspath = '/Users/zsc/Desktop/rmdtest/shinytest/ieee-transactions-on-cybernetics.csl'
+        # bibpath = "/Users/zsc/Desktop/rmdtest/shinytest/real3.bib"
 
         file_csl = readLines(clspath,encoding = "UTF-8")
         writeLines(file_csl,'./navigation_default.csl')
