@@ -7,7 +7,7 @@
 read_bib2tib(file)
 }
 \arguments{
-\item{file}{character, path or URL to a .bib file.}
+\item{file}{character, path or URL to a bib file.}
 }
 \value{
 A \code{tibble}.

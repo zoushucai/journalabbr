@@ -15,13 +15,13 @@ abbr2bib(file, outfile = tempfile(fileext = ".bib"))
 {
 output a new Bib file in the current directory,
 which only abbreviates the journal fields, and the rest remains unchanged.
-The default new file name is \code{abbr.bib}. And return to a list.
-List consists of three data structures as follows:
+And return to a tibble, it has four columns:
 }
 \describe{
-\item{abbrtable}{A data.table, Bib abbreviation table of all items, where NA means that there is no journal field in a bib}
-\item{noabbr}{A data.table, No abbreviated journals found}
-\item{noindex}{A vector, Index corresponding to noabbr}
+\item{JOURNAL}{Original journal field in bib}
+\item{journal_abbr}{Field after abbreviation of original journal}
+\item{originFile}{Abbreviate the source of the database file, see \url{https://github.com/JabRef/abbrv.jabref.org/tree/master/journals}}
+\item{is_abbr}{There are only three cases, 1 represents that the item has a JOURNAL field and has been abbreviated successfully, - 1 means that the item does not have a JOURNAL field, and 0 represents that the item has a JOURNAL field, but the corresponding abbreviation is not found in the database, so the original JOURNAL field is used instead}
 }
 }
 \description{

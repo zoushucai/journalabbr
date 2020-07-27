@@ -8,7 +8,6 @@ library(dplyr)
 library(tinytex)
 library(DT)
 library(journalabbr)
-# shiny app  的未来版本
 #library(lubridate)
 #options(shiny.fullstacktrace = TRUE)
 options(shiny.sanitize.errors = FALSE)

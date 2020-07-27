@@ -1,7 +1,7 @@
 #' @title Parse a BibTeX file to a \code{tibble}
 #' @description The BibTeX file is read, parsed, tidied and written to a \code{tibble}.
 #' @details Read, parse and collate bibtex file to form a Tibble. Different BIB may produce different tibble columns.
-#' @param file character, path or URL to a .bib file.
+#' @param file character, path or URL to a bib file.
 #' @seealso \code{\link{abbrTable}}.
 #' @return A \code{tibble}.
 #'
