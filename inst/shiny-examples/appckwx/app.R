@@ -335,7 +335,7 @@ server <- function(input, output) {
     progress$set(message = "正在计算中,请耐心等待!!!", value = 0)
     rmarkdown::render("rmd_finally.Rmd", output_format = latex_document())
     value = style_fun(texfile = 'rmd_finally.tex')
-    #clear_file()
+    clear_file()
     return(value)
   })
 
