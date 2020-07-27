@@ -12,6 +12,7 @@ library(journalabbr)
 #options(shiny.fullstacktrace = TRUE)
 options(shiny.sanitize.errors = FALSE)
 rm(list = ls())
+
 clear_file = function(mypattern = '(.*\\.R$)|(.*\\.Rproj$)' ){
   tryCatch(
     {
@@ -33,6 +34,7 @@ clear_file = function(mypattern = '(.*\\.R$)|(.*\\.Rproj$)' ){
   )
 }
 
+is_empty = rlang::is_empty
 
 style_fun = function(texfile){
   tex =  readLines(texfile, encoding = "UTF-8")
@@ -161,7 +163,7 @@ ui <- fluidPage(
   titlePanel( title = h2("自用参考文献样式调整", align = "left"), windowTitle = '自用参考文献样式调整' ),
   rclipboardSetup(), # 剪切板设置,必须在开头声明,后面才能用,这是一段js的调用
   tabsetPanel(
-    tabPanel("输入",
+    tabPanel("Input",
              wellPanel(
                fileInput("file1_tex", "Choose tex File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.tex')),
                fileInput("file2_csl", "Choose csl File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.csl')),
@@ -201,9 +203,13 @@ ui <- fluidPage(
              #,HTML("<p><font color='red'>\n警告显示如下:\n</font></p>")  # 方法一:  直接使用HTML标签
              ,p("警告显示如下:", style="font-weight:bold;color:red;")
              ,verbatimTextOutput("out_warning")),
-    tabPanel("Jouranl abbr",
+    tabPanel("Items Info",
              helpText("注意:最终的结果可能还需要细调"),
              dataTableOutput(outputId="jouranl_abbr")
+    ),
+    tabPanel("Abbr source",
+             helpText("注意:最终的结果可能还需要细调"),
+             dataTableOutput(outputId="abbrsource")
     ),
     tabPanel("Style 1",
              helpText("注意:最终的结果可能还需要细调"),
@@ -270,8 +276,9 @@ server <- function(input, output) {
         texpath = input$file1_tex$datapath
         clspath = input$file2_csl$datapath
         bibpath = input$file3_bib$datapath
-
+        #
         # texpath = '/Users/zsc/Desktop/rmdtest/shinytest/FlexilityDTFSTwoC.tex'
+        # texpath = '/Users/zsc/Desktop/rmdtest/shinytest/document2.tex'
         # clspath = '/Users/zsc/Desktop/rmdtest/shinytest/ieee-transactions-on-cybernetics.csl'
         # bibpath = "/Users/zsc/Desktop/rmdtest/shinytest/real3.bib"
 
@@ -282,9 +289,12 @@ server <- function(input, output) {
         file_bib = readLines(bibpath,encoding = "UTF-8")
         file_bib = c('\n',file_bib,'\n')# 对第一个参考文献添加换行,与最后一个参考文件添加换行
         writeLines(file_bib,'./MEMIO_default.bib')
+        abbrtable = NULL
         if (input$bibabbr == "TRUE"){
+          #file.copy('MEMIO_default.bib','MEMIO_defaultcopy.bib')
           abbrtable =  journalabbr::abbr2bib(file = "MEMIO_default.bib",
                                              outfile = 'MEMIO_default.bib')
+
         }
         if (input$bibformat == "TRUE"){
           templogic2 = eval(parse(text = input$bibformat))
@@ -314,19 +324,19 @@ server <- function(input, output) {
     tex_diff = !is.na(df$key)  & is.na(df$sitenum) # tex 有 , 而bib没有
     if(sum(tex_diff) >=1){
       s = paste0(df$key[tex_diff],collapse = "\n")
-      stop(paste0("\n",s,'\n出错,这些参考文献在tex文件中引用了,但是在数据库中不存在该文献!!') )
+      stop(paste0("出错,以下参考文献在tex文件中引用了,但是在数据库中不存在该文献!!\n", s,'\n请检查key后重新运行') )
     }else{
 
       rmd_yaml = "---\ntitle: \"how to use cite\"\nauthor: \"zsc\"\ndate: \"`r Sys.Date()`\"\noutput:\n  pdf_document: \n    keep_tex: true\n    latex_engine: xelatex\n    extra_dependencies: [\"ctex\",\"caption\"]\nlink-citations: yes \ncsl: navigation_default.csl\nbibliography: MEMIO_default.bib\n---\n"
       rmd_key = paste0('\n[@',tex_key,']\n') %>%  paste(.,collapse = "")
       rmd_key %>%  paste0(rmd_yaml, . ) %>%  writeLines(.,"rmd_finally.Rmd")
-      return(df)
+      return(list(df,abbrtable))
     }
   })
 
 
   tex_cite_style = reactive({
-    df = randomVals()
+    df = randomVals()[[1]]
     ## 读取新的tex文件,并且提取tex 中具有参考文献样式的字段
     # 并通过pandoc 把Rmd文件转变为latex文件
     progress <- shiny::Progress$new()
@@ -348,11 +358,9 @@ server <- function(input, output) {
   ###############################################
   ############### 输出警告函数,----- 即 tex中有引用,但是bib数据库中不存在该参考文献  ###############
   output$out_warning <- renderText({
-    df = randomVals() # 返回一个list
-    if(length(df)>1& rlang::is_empty(warnings())){
+    df = randomVals()[[1]] # 返回一个list
+    if(length(df)>1 & !is_empty(df)){
       return('无')
-    }else{
-      warnings()
     }
   })
 
@@ -386,7 +394,7 @@ server <- function(input, output) {
   ##########################################
   ##### 输出引用的bib和key################
   out_yinyong = reactive({
-    df = randomVals()
+    df = randomVals()[[1]]
     df = df[!is.na(df$name),]
     if(input$inSelect == '按tex文中引用顺序'){
       df = dplyr::arrange(df,name)
@@ -418,7 +426,7 @@ server <- function(input, output) {
     }
   })
   out_no_yinyong = reactive({
-    df = randomVals()
+    df = randomVals()[[1]]
     if(sum(is.na( df$name)) == 0 ){
       s_temp ='刚好没有引用的key,\n(即bib数据库中的文献全部被引用)'
       return(list(s_temp,s_temp))
@@ -472,17 +480,29 @@ server <- function(input, output) {
   ############################################
   ###### 输出期刊缩写对照表 ################
   output$jouranl_abbr <- renderDataTable({
-    df = randomVals()
+    df = randomVals()[[1]]
     if(is_empty(df)){
-      return(NULL)
+      temp = data.frame('NOTE'='整个bib没有找到对应的缩写!!!')
+      return(temp)
     }else{
       df$value =  purrr::map(df$value,function(x){
         paste0(x,collapse = '\n\n')
       })
-      dff = df[,c("key",'name',"sitenum",'value','typebib','JOURNAL')]
+      dff = df[,c("key",'name',"sitenum",'value','typebib','AUTHOR','JOURNAL')]
       return(dff)
     }
-  })
+  },options = list(pageLength = 100)
+  )
+  output$abbrsource <- renderDataTable({
+    abbrtable = randomVals()[[2]]
+    if(is_empty(abbrtable)){
+      temp = data.frame('NOTE'='整个bib没有找到对应的缩写!!!')
+      return(temp)
+    }else{
+    return(abbrtable)
+    }
+  },options = list(pageLength = 100)
+  )
 }
 
 
