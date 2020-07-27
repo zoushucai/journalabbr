@@ -6,6 +6,8 @@ Implementing journal abbreviation for the 'Journal' field in BibTex file
 
 ```R
 devtools::install_github("zhoushucai/journalabbr")
+# or
+xfun::install_github("zoushucai/journalabbr")
 ```
 
 ## Require
@@ -18,13 +20,16 @@ The format of the bib file is as follows:
   **** = "*****",
   *** = {{******}},
   **** = {*****}}
+
 % or
+
 @***{****,
   **** = {****},
   **** = "*****",
   *** = {{******}},
   **** = {*****}
   }
+  
 ```
 
 Except for the `@ `character line, the rest of the field lines must have an equal sign `=`
