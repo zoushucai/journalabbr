@@ -5,6 +5,10 @@ Implementing journal abbreviation for the 'Journal' field in BibTex file
 ## Install
 
 ```R
+# CRAN
+install.packages("journalabbr")
+
+#
 devtools::install_github("zhoushucai/journalabbr")
 # or
 xfun::install_github("zoushucai/journalabbr")
