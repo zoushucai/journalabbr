@@ -35,7 +35,7 @@ write_tib2bib = function(tib,
     warning('This tibble has a lowercase column name, which does not meet the requirements')
   }
   Value = ifelse(!is.na(tib$typebib),
-                 paste("@", str_to_title(tib$typebib), "{", sep = ""),
+                 paste("@", str_to_lower(tib$typebib), "{", sep = ""),
                  stop('on typebib')
                 )
   Value = ifelse(!is.na(tib$keybib),
@@ -75,7 +75,7 @@ write_tib2bib = function(tib,
 
   for (ii in col) {
     temp = ifelse(!is.na(tib[[ii]]),
-                  paste("\t", str_to_title(ii), " = {", tib[[ii]], "},\n", sep = ""),
+                  paste("\t", str_to_lower(ii), " = {", tib[[ii]], "},\n", sep = ""),
                   "")
     Value = map2(Value, temp, function(x, y) { paste0(x, y) })
   }
