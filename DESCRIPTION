@@ -12,7 +12,7 @@ Encoding: UTF-8
 LazyData: true
 Depends:
     R (>= 4.0.0)
-Imports: stringr, dplyr, purrr, stringi, tibble, usethis, rlang, httr, shiny
+Imports: stringr, dplyr, purrr, tibble, rlang, httr, shiny
 Suggests: testthat, knitr, rmarkdown, tidyr, rclipboard, tinytex, DT
 RoxygenNote: 7.1.1
 Date: 2020-07-20
