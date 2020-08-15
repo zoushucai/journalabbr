@@ -167,5 +167,9 @@ read_bib2tib = function(file){
       ifelse(!is_empty(temp),x[temp[1],2], NA)
     })
   }
+  #str_extract_all(item_tib$AUTHOR,'([\u4e00-\u9fa5])(\\}){1,}([ ]{1,})and([ ]{1,})(\\{){1,}([\u4e00-\u9fa5])')
+
+  item_tib$AUTHOR =  gsub('([\u4e00-\u9fa5])(\\}){1,}([ ]{1,})(and)([ ]{1,})(\\{){1,}([\u4e00-\u9fa5])','\\1, \\7', item_tib$AUTHOR)
+
   return(item_tib)
 }
