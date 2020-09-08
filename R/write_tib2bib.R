@@ -4,6 +4,7 @@
 #' @param file character, file path to write the .bib file.
 #' @param append logical, if \code{TRUE} the \code{tibble} will be appended to an existing file.
 #' @param isformat logical, if \code{TRUE} the  Fields in \code{tibble} will complete braces to make them appear in pairs.
+#' @param isdelkeywords logical, if \code{TRUE} and there is a picture of column 'isdelkeywords', column 'isdelkeywords' in the \code{tibble} will be deleted.
 #' @param connect_author character, what symbols are used to connect multiple authors, \code{'nothing','\\\\&', '&', 'and'}, where \code{'nothing'} stand for do nothing(default).
 #' @return \code{file} as a character string, invisibly.
 #' @importFrom stringr str_count str_dup str_to_title str_to_upper
@@ -27,8 +28,13 @@ write_tib2bib = function(tib,
                          file = tempfile(fileext = ".bib"),
                          append = FALSE,
                          isformat = TRUE,
-                         connect_author = c('nothing','\\\\&','&','and')) {
+                         isdelkeywords = FALSE,
+                         connect_author = c('nothing','\\\\&','&','and')
+                         ) {
   detcol = c("typebib", "keybib", "sitenum", "value", "rawchar", "journal_abbr", "originFile")
+  if(isdelkeywords){
+    detcol = c(detcol,str_to_upper('keywords'))
+  }
   col = setdiff(colnames(tib),detcol)
   rm(detcol)
   if (!all(col %in% str_to_upper(col))) {

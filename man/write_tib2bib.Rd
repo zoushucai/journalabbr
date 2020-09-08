@@ -9,6 +9,7 @@ write_tib2bib(
   file = tempfile(fileext = ".bib"),
   append = FALSE,
   isformat = TRUE,
+  isdelkeywords = FALSE,
   connect_author = c("nothing", "\\\\\\\\&", "&", "and")
 )
 }
@@ -20,6 +21,8 @@ write_tib2bib(
 \item{append}{logical, if \code{TRUE} the \code{tibble} will be appended to an existing file.}
 
 \item{isformat}{logical, if \code{TRUE} the  Fields in \code{tibble} will complete braces to make them appear in pairs.}
+
+\item{isdelkeywords}{logical, if \code{TRUE} and there is a picture of column 'isdelkeywords', column 'isdelkeywords' in the \code{tibble} will be deleted.}
 
 \item{connect_author}{character, what symbols are used to connect multiple authors, \code{'nothing','\\\\&', '&', 'and'}, where \code{'nothing'} stand for do nothing(default).}
 }
