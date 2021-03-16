@@ -9,7 +9,7 @@ Implementing journal abbreviation for the 'Journal' field in BibTex file
 install.packages("journalabbr")
 
 #
-devtools::install_github("zhoushucai/journalabbr")
+devtools::install_github("zoushucai/journalabbr")
 # or
 xfun::install_github("zoushucai/journalabbr")
 ```
