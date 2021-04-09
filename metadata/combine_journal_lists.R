@@ -82,6 +82,7 @@ combine_journal_lists = function(){
   }], by = journal_lower]$V1]
   sprintf("最后,整理后期刊具有缩写的一共用%d篇\n", dtf[, .N]) %>% cat
 
+  #dtf = dtf[,lapply(.SD, function(x)stri_escape_unicode(x))]
   abbrTable = as.data.frame(dtf)
   usethis::use_data(abbrTable, internal = TRUE,overwrite = TRUE)
   # 这样可以在任何内部函数中使用,并且不需要加载
