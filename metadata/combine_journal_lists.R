@@ -25,7 +25,7 @@ combine_journal_lists = function(){
          "journal_abbreviations_general.csv",
          "journal_abbreviations_geology_physics_variations.csv",
          "journal_abbreviations_geology_physics.csv",
-         "journal_abbreviations_ieee_strings.csv",
+         #"journal_abbreviations_ieee_strings.csv",
          "journal_abbreviations_ieee.csv",
          "journal_abbreviations_lifescience.csv",
          "journal_abbreviations_mathematics.csv",
@@ -85,5 +85,7 @@ combine_journal_lists = function(){
   abbrTable = as.data.frame(dtf)
   usethis::use_data(abbrTable, internal = TRUE,overwrite = TRUE)
   # 这样可以在任何内部函数中使用,并且不需要加载
-  }
+  file.copy(from = './R/sysdata.rda', to = './data/abbrTable.rda',overwrite=T)
+}
 combine_journal_lists()
+

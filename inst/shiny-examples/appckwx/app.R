@@ -255,6 +255,14 @@ ui <- fluidPage(
                ))
              )
     ),
+    tabPanel("Abbr query",
+             # 自适应宽度
+             textAreaInput("Journame", "Journal name", value = "", width = "100%",rows = 10, resize = "both") %>%
+               shiny::tagAppendAttributes(style = 'width: 100%;'),
+             helpText("以行为单位进行包含查询(忽略大小写与两边的空格,以及不查询期刊名字符个数小于5的期刊)"),
+             actionButton("goJournameQuery", "Submit"),
+             dataTableOutput(outputId="JournameAbbr")
+    ),
     tabPanel("SessionInfo",
              verbatimTextOutput("out_runenvir")
     )
@@ -350,7 +358,27 @@ server <- function(input, output) {
   })
 
 
-
+  journamevalue <- eventReactive(input$goJournameQuery, {
+    Journame = input$Journame
+    Journame_lower = str_to_lower(Journame)#把输入的秩转变为小写
+    # 分割---以换行符分割
+    Journame_lower = str_split(Journame_lower,pattern = '\\n')[[1]] %>%
+      str_trim(., side ="both")
+    l = nchar(Journame_lower) # 检查输入的长度
+    Journame_lower = Journame_lower[l>4] # 过滤长度小于4的期刊
+    adf = as.data.table(abbrTable)
+    temp = str_to_lower(adf$journal)
+    index = lapply(Journame_lower,function(x) grep(x,temp)) # 返回的是包含该字符串的list
+    index = unlist(index)#
+    if(length(index)<=0){
+      return(data.table(V1='没找到相应的缩写'))
+    }else{
+      return(adf[index,.(journal,journal_abbr,originFile)])
+    }
+  })
+  output$JournameAbbr <- renderDataTable({
+    journamevalue()
+  },options = list(pageLength = 100))
   #######################################################
   ######################### 显示运行环境函数 ###############
 
