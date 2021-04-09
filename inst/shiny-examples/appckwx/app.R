@@ -192,10 +192,17 @@ reorder_bib_fun = function(filepath){
   }
 
   if(is.na(from2)){
-    from1 = 1
+    duoyu_diff ='没发现 thebibliography 环境'
+    queshao_diff = he = bib_sorted = duoyu_diff
+    #stop('没发现 thebibliography 环境')
+    return(list(duoyu_diff,queshao_diff, bib_sorted,he))
+
   }
   if(is.na(to2)){
-    to1 = length(tex)
+    duoyu_diff ='没发现 thebibliography 环境'
+    queshao_diff = he = bib_sorted = duoyu_diff
+    #stop('没发现 thebibliography 环境')
+    return(list(duoyu_diff,queshao_diff, bib_sorted,he))
   }
 
   ## 提取正文部分
@@ -226,7 +233,6 @@ reorder_bib_fun = function(filepath){
   ##### 提取\bibitem{***},变形 \bibitem[xxx]{***},\bibitem{XXX}{***}, \bibitem{}{***}
   temp = str_extract(tex_bib_he,'\\\\bibitem(\\[.*?\\]|\\{.*?\\}|())\\{[a-zA-Z0-9, -].*?\\}')
   bib_lable = str_extract(temp,'(?<=\\{)[^\\{]*?(?=\\}$)')
-  library(data.table)
   cite_df = data.table('clab'=cite_label_fin)
   bib_df = data.table('blab'=bib_lable,'rawbib'=tex_bib_he)
 
@@ -524,7 +530,7 @@ server <- function(input, output) {
     reorderbib()[[3]]
   })
   output$ReorderBibclips <- renderUI({
-    rclipButton("ReorderBibclips", "style1 Copy", reorderbib()[[3]], icon("clipboard"))
+    rclipButton("ReorderBibclips", "thebibliography Copy", reorderbib()[[3]], icon("clipboard"))
   })
   ### 未引用
   output$ReorderNoBib <- renderText({
