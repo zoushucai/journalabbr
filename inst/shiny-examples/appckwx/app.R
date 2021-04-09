@@ -157,6 +157,102 @@ extract_key = function(texfile){
   return(tex_key)
 }
 
+reorder_bib_fun = function(filepath){
+
+  #tex = readLines("/Users/zsc/Desktop/未命名文件夹/我的论文终稿/参考文献排序/MeasuringTrans02的副本.tex")
+  tex = readLines(filepath,encoding = "UTF-8")
+  ##1 删除注释
+
+
+  # 首先替换以%开头的所有内容
+  tex = str_replace(tex,pattern = '^%.*','')
+  # 在替换 % 后面的内容, \% 后面的内容不做替换
+  tex = str_replace(tex,pattern = '(?<=[^\\\\])%.*','')
+  ## 是否要删除空白呢? 不需要
+
+  #####tex文档的主要结构...
+  # \begin{document}
+  # ....
+  # \begin{thebibliography}
+  # ....
+  # \end{thebibliography}
+  # \end{document}
+
+  ## 找 \begin{thebibliography} .... \end{thebibliography}
+  # 找 文章的开头
+  from1 = grep('\\\\begin\\{document\\}',tex)[1]
+  to1 = grep('\\\\end\\{document\\}',tex)[1]
+  from2 =  grep('\\\\begin\\{thebibliography\\}',tex)[1]
+  to2 = grep('\\\\end\\{thebibliography\\}',tex)[1]
+  if(is.na(from1)){
+    from1 = 1
+  }
+  if(is.na(to1)){
+    to1 = length(tex)
+  }
+
+  if(is.na(from2)){
+    from1 = 1
+  }
+  if(is.na(to2)){
+    to1 = length(tex)
+  }
+
+  ## 提取正文部分
+  tex_body = tex[(from1+1):(from2-1)] %>% paste(.,collapse = "") # 删除document 以前的所有内容
+  ### 从正文中提取 cite
+  cite1 = str_extract_all(tex_body,pattern = '\\\\((up)|())cite(([pts])|())\\{[a-zA-Z0-9, -].*?\\}') %>% unlist()
+  #### 从cite 中提取 label
+  cite_label = str_extract_all(cite1,pattern = '(?<=\\{)[a-zA-Z0-9, -].*?(?=\\})') %>% unlist()
+  #### 以逗号进行分割
+  cite_label  = str_split(cite_label,pattern = ',') %>% unlist() %>% str_trim(.,side = "both")
+  cite_label_fin = unique(cite_label) # 得到文中的自然引用顺序
+
+  ## 提取thebibliography环境
+  tex_bib = tex[(from2+1):(to2-1)] # 删除document 以前的所有内容
+  #tex_bib = tex_bib %>% paste(.,collapse = '\n')
+  #### 查找到 \\bibitem 字样的位置,进行合并
+  index = grep(pattern='\\\\bibitem',tex_bib)
+  m = length(index)
+  index2 = c(index[2:m],length(tex_bib))
+  if(length(index) != length(index2)){
+    stop('cite长度不等')
+  }
+  if(length(index)==0){
+    stop('cite长度居然为0,直接退出')
+  }
+  tex_bib_he = mapply(function(x,y){paste(tex_bib[x:(y-1)],collapse = '')}, index,index2)
+
+  ##### 提取\bibitem{***},变形 \bibitem[xxx]{***},\bibitem{XXX}{***}, \bibitem{}{***}
+  temp = str_extract(tex_bib_he,'\\\\bibitem(\\[.*?\\]|\\{.*?\\}|())\\{[a-zA-Z0-9, -].*?\\}')
+  bib_lable = str_extract(temp,'(?<=\\{)[^\\{]*?(?=\\}$)')
+  library(data.table)
+  cite_df = data.table('clab'=cite_label_fin)
+  bib_df = data.table('blab'=bib_lable,'rawbib'=tex_bib_he)
+
+  ## 两个数据库的差
+  duoyu_diff = setdiff(unique(bib_df$blab),unique(cite_df$clab))
+  queshao_diff = setdiff(unique(cite_df$clab),unique(bib_df$blab))
+
+  if(length(duoyu_diff)<=0){
+    duoyu_diff = '没有多余的key'
+  }else{
+    duoyu_diff = paste(duoyu_diff,collapse = '\n')
+  }
+  if(length(queshao_diff)<=0){
+    queshao_diff = '无'
+  }else{
+    queshao_diff = paste(queshao_diff,collapse = '\n')
+  }
+  he = merge(cite_df,bib_df,all.x=T,by.x = 'clab',by.y = 'blab')
+  ## 排序后的结果
+  bib_sorted = paste(he$rawbib,collapse = '\n\n')
+  ## 重要的三个变量
+  # duoyu_diff queshao_diff bib_sorted
+  # write(bib_sorted,'/Users/zsc/Desktop/未命名文件夹/我的论文终稿/参考文献排序/a.tex')
+  return(list(duoyu_diff,queshao_diff, bib_sorted,he))
+}
+
 clear_file()
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -263,6 +359,29 @@ ui <- fluidPage(
              actionButton("goJournameQuery", "Submit"),
              dataTableOutput(outputId="JournameAbbr")
     ),
+    tabPanel("Reorder thebibliography",
+             wellPanel(
+             fileInput("file_bibtex", "Choose tex File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.tex')),
+             actionButton("ReorderBibSubmit", "Submit")
+             ),
+             helpText("tex文本中引用了,但是 thebib环境中没有的key"),
+             fluidRow(
+               column(12, p('一般结果是无,建议先在本地正常编译tex文件'), wellPanel(
+                 textOutput("TexNoCiteLabel")
+               ))
+             ),
+             helpText("输出重排序后的结果以及未引用(thebib环境多余)的key"),
+             fluidRow(
+               column(9, p('重排序后的结果'), wellPanel(
+                 uiOutput("ReorderBibclips"),
+                 verbatimTextOutput("ReorderBib")
+               )),
+               column(3, p('未引用的key'), wellPanel(
+                 uiOutput("ReorderNoBibclips"),
+                 verbatimTextOutput("ReorderNoBib")
+               ))
+             ),
+    ),
     tabPanel("SessionInfo",
              verbatimTextOutput("out_runenvir")
     )
@@ -357,7 +476,7 @@ server <- function(input, output) {
     return(value)
   })
 
-
+  ######  期刊缩写查询  开始 #######
   journamevalue <- eventReactive(input$goJournameQuery, {
     Journame = input$Journame
     Journame_lower = str_to_lower(Journame)#把输入的秩转变为小写
@@ -379,6 +498,48 @@ server <- function(input, output) {
   output$JournameAbbr <- renderDataTable({
     journamevalue()
   },options = list(pageLength = 100))
+  ######  期刊缩写查询  结束 #######
+  #######################################################
+
+
+  #######################################################
+  ######### 重排序 thebib环境  开始 #######
+  reorderbib <- eventReactive(input$ReorderBibSubmit,{
+    clear_file()
+    tryCatch(
+      {
+        texpath = input$file_bibtex$datapath
+        #texpath = '/Users/zsc/Desktop/未命名文件夹/我的论文终稿/参考文献排序/MeasuringTrans02的副本.tex'
+        list_df = reorder_bib_fun(filepath = texpath)
+        return(list_df)
+      },
+      error = function(e) {
+        # return a safeError if a parsing error occurs
+        stop(safeError(e))
+      }
+    )
+  })
+  output$ReorderBib <- renderText({
+    # list(duoyu_diff,queshao_diff, bib_sorted,he)
+    reorderbib()[[3]]
+  })
+  output$ReorderBibclips <- renderUI({
+    rclipButton("ReorderBibclips", "style1 Copy", reorderbib()[[3]], icon("clipboard"))
+  })
+  ### 未引用
+  output$ReorderNoBib <- renderText({
+    reorderbib()[[1]]
+  })
+  output$ReorderNoBibclips <- renderUI({
+    rclipButton("ReorderNoBibclips", "bib no cite Copy", reorderbib()[[1]], icon("clipboard"))
+  })
+  output$TexNoCiteLabel <- renderText({
+    reorderbib()[[2]]
+  })
+  ######### 重排序 thebib环境  结束 #######
+  #######################################################
+
+
   #######################################################
   ######################### 显示运行环境函数 ###############
 
