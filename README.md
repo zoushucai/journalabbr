@@ -1,6 +1,6 @@
 ## Function
 
-Implementing journal abbreviation for the 'Journal' field in BibTex file
+Implementing journal abbreviation for the 'Journal' field in BibTex file.
 
 ## Install
 
