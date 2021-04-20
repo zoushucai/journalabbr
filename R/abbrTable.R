@@ -3,7 +3,7 @@
 #' @description  There are four columns, each separated by a semicolon (;), as follows
 #' journal  journal_abbr journal_lower. count_dot
 #'
-#' @source https://github.com/JabRef/abbrv.jabref.org/journals
+#' @source \url{https://github.com/JabRef/abbrv.jabref.org/journals}
 #' @format A data frame with columns:
 #' \describe{
 #' \item{journal}{Full name of Journal}
@@ -13,5 +13,15 @@
 #' \item{originFile}{File source}
 #' \item{abbr_len}{The char length  of abbreviations of Journal }
 #' }
+#' @examples
+#' require(journalabbr)
+#' require(stringi)
+#' require(data.table)
+#' data('abbrTable', package = "journalabbr")
+#' # Unicode to UTF-8
+#' abbrTable = as.data.table(abbrTable)
+#' abbrTable = abbrTable[,lapply(.SD, function(x)stri_unescape_unicode(x))]
+#' @export
 "abbrTable"
+
 

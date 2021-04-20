@@ -1,0 +1,92 @@
+---
+title: "how to use cite"
+author: "zsc"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: 
+    keep_tex: true
+    latex_engine: xelatex
+    extra_dependencies: ["ctex","caption"]
+link-citations: yes 
+csl: navigation_default.csl
+bibliography: MEMIO_default.bib
+---
+
+[@arrow2012social]
+
+[@saaty1980analytic]
+
+[@lu2007multi]
+
+[@dong2016consensus]
+
+[@rezaei2015bestworst]
+
+[@xu2019revisiting]
+
+[@liu2020decision]
+
+[@saaty2013modern]
+
+[@ZhangZM2018]
+
+[@WuYZ2020]
+
+[@kou2014cosine]
+
+[@liu2017axiomatic]
+
+[@brunelli2017studying]
+
+[@brunelli2018survey]
+
+[@liu2020deriving]
+
+[@cavallo2016weak]
+
+[@cavallo2016ensuring]
+
+[@regenwetter2011transitivity]
+
+[@von2007theory]
+
+[@basile2006transitive]
+
+[@cavallo2015reciprocal]
+
+[@Herrere2007]
+
+[@chiclana2008cardinal]
+
+[@xu2016distance]
+
+[@xu2013ordinal]
+
+[@kulakowski2018inconsistency]
+
+[@brunelli2020distance]
+
+[@liu2021transitivity]
+
+[@switalski2001transitivity]
+
+[@liu2016limited]
+
+[@sprent2000applied]
+
+[@howell2012statistical]
+
+[@gibbons2014nonparametric]
+
+[@saaty2000fundamentals]
+
+[@sun2006optimization]
+
+[@kennedy1995particle]
+
+[@kennedy2001swarm]
+
+[@herrera2004some]
+
+[@saaty1977scaling]
+
