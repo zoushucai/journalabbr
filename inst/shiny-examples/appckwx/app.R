@@ -494,8 +494,9 @@ server <- function(input, output) {
     l = nchar(Journame_lower) # 检查输入的长度
     Journame_lower = Journame_lower[l>4] # 过滤长度小于4的期刊
     # Unicode to UTF-8
-    abbrTable = as.data.table(abbrTable)
-    abbrTable = abbrTable[,lapply(.SD, function(x)stringi::stri_escape_unicode(x))]
+    # abbrTable = as.data.table(abbrTable)
+    # abbrTable = abbrTable[,lapply(.SD, function(x)stringi::stri_escape_unicode(x))]
+    abbrTable = as.data.frame(lapply(abbrTable, function(x)stringi::stri_unescape_unicode(x)))
     adf = as.data.table(abbrTable)
     temp = str_to_lower(adf$journal)
     index = lapply(Journame_lower,function(x) grep(x,temp)) # 返回的是包含该字符串的list

@@ -77,16 +77,16 @@ combine_journal_lists = function(){
   #### 去除重复项, 按照journal_lower期刊进行分组,
   #### 并找出各个分组中 count_dot 值最大的行,如有多个最大值,则选择缩写字段最少的那个
   dtf = dt[dt[, .I[{
-    temp = which(count_dot== max(count_dot))
+    temp = which(count_dot == max(count_dot))
     ifelse(length(temp) == 1, temp, which.min(abbr_len))
   }], by = journal_lower]$V1]
   sprintf("最后,整理后期刊具有缩写的一共用%d篇\n", dtf[, .N]) %>% cat
-
-  dtf = dtf[,lapply(.SD, function(x)stringi::stri_escape_unicode(x))]
+  dtf = lapply(dtf,function(x)stringi::stri_escape_unicode(x))
+  #dtf = dtf[,lapply(.SD, function(x)stringi::stri_escape_unicode(x))]
   abbrTable = as.data.frame(dtf)
   usethis::use_data(abbrTable, internal = TRUE,overwrite = TRUE)
   # 这样可以在任何内部函数中使用,并且不需要加载
-  file.copy(from = './R/sysdata.rda', to = './data/abbrTable.rda',overwrite=T)
+  # file.copy(from = './R/sysdata.rda', to = './data/abbrTable.rda',overwrite=T)
 }
 library(stringr)
 library(stringi)
@@ -94,4 +94,4 @@ library(data.table)
 library(purrr)
 library(dplyr)
 combine_journal_lists()
-
+fwrite(as.data.table(abbrTable),file = '../b.csv')

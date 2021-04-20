@@ -3,7 +3,6 @@
 #' @importFrom rlang is_empty
 #' @importFrom stringr str_trim str_to_lower str_replace_all str_extract str_replace
 #' @importFrom stringi stri_unescape_unicode
-#' @importFrom data.table as.data.table .SD
 #' @importFrom stats complete.cases
 #' @importFrom dplyr left_join
 #' @importFrom httr GET
@@ -64,8 +63,9 @@ abbr2bib <- function(file, outfile = tempfile(fileext = ".bib")) {
   # # Unicode to UTF-8
   # library(data.table)
   # library(stringi)
-  abbrTable = data.table::as.data.table(abbrTable)
-  abbrTable = abbrTable[,lapply(.SD, function(x)stringi::stri_unescape_unicode(x))]
+  # abbrTable = data.table::as.data.table(abbrTable)
+  # abbrTable = abbrTable[,lapply(.SD, function(x)stringi::stri_unescape_unicode(x))]
+  abbrTable = as.data.frame(lapply(abbrTable, function(x)stringi::stri_unescape_unicode(x)))
   abbrTableSub = tibble::as_tibble(abbrTable)
   abbrTableSub = abbrTableSub[,c("journal_lower",'journal_abbr','originFile')]
   tib = dplyr::left_join(item_tib, abbrTableSub, by = "journal_lower")

@@ -16,7 +16,7 @@ A data frame with columns:
 }
 }
 \source{
-\url{https://github.com/JabRef/abbrv.jabref.org/journals}
+\url{https://github.com/JabRef/abbrv.jabref.org}
 }
 \usage{
 abbrTable
@@ -28,10 +28,8 @@ journal  journal_abbr journal_lower. count_dot
 \examples{
 require(journalabbr)
 require(stringi)
-require(data.table)
-data('abbrTable', package = "journalabbr")
+abbrTable = journalabbr:::abbrTable
 # Unicode to UTF-8
-abbrTable = as.data.table(abbrTable)
-abbrTable = abbrTable[,lapply(.SD, function(x)stri_unescape_unicode(x))]
+abbrTable = as.data.frame(lapply(abbrTable, function(x)stringi::stri_unescape_unicode(x)))
 }
 \keyword{datasets}
