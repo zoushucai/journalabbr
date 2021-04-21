@@ -31,6 +31,7 @@ clear_file = function(mypattern = '(.*\\.R$)|(.*\\.Rproj$)' ){
     error = function(e) {
       # return a safeError if a parsing error occurs
       print("出错啦")
+      clear_file()
       stop(safeError(e))
     }
   )
@@ -38,15 +39,12 @@ clear_file = function(mypattern = '(.*\\.R$)|(.*\\.Rproj$)' ){
 
 is_empty = rlang::is_empty
 
-style_fun = function(texfile){
-  tex =  readLines(texfile, encoding = "UTF-8")
-  style_0 = paste0(tex ,collapse = "\n")     # 直接返回rmd生成的tex文件样式
-
-  #clear_file()
+tidy_tex = function(tex){
   ## 提取页面的显示信息--有可能是数字,有可能是作者,有可能是作者-年
   from1 = grep('\\\\begin\\{document\\}',tex)
   from2 = grep('\\\\maketitle',tex)
   if(is_empty(from1) && is_empty(from2)){
+    clear_file()
     stop('没找到开始的地方')
   }else if(!is_empty(from1) && is_empty(from2)){
     ind_from = from1
@@ -55,11 +53,13 @@ style_fun = function(texfile){
   }else if (from1 <= from2){
     ind_from = from2
   }else{
+    clear_file()
     stop('索引值出错,没找到开始的地方')
   }
-  to1 = grep('\\\\hypertarget\\{refs\\}',tex)
-  to2 = grep('\\\\begin\\{cslreferences\\}',tex)
+  to1 = grep('\\\\hypertarget\\{refs\\}',tex,ignore.case = T)
+  to2 = grep('\\\\begin\\{cslreferences\\}',tex,ignore.case = T)
   if(is_empty(to1) && is_empty(to2)){
+    clear_file()
     stop('没找到结束的地方')
   }else if(!is_empty(to1) && is_empty(to2)){
     ind_to = to1
@@ -68,10 +68,12 @@ style_fun = function(texfile){
   }else if (to1 <= to2){
     ind_to = to1
   }else{
+    clear_file()
     stop('索引值出错,没找到结束的地方')
   }
 
   tex_show = tex[(ind_from + 1):(ind_to - 1)]# 提权显示页面
+
   for (i in seq_len(100)) {
     value = which(tex_show[1] =="")
     if(!is_empty(value) && value ==1){
@@ -89,60 +91,156 @@ style_fun = function(texfile){
       break
     }
   }
+  ######### 把tex_show 进行合并,因为有些是两行表示一个字段
   tex_show[tex_show == ""] = '\n@@\n\n\n'
   tex_show = paste(tex_show,collapse = ' ',sep = "")
   tex_show = unlist(str_split(tex_show,'\n@@\n\n\n'))
   tex_show = str_trim(tex_show,side = "both")
+  return(tex_show)
+}
+cls_type = function(tex_show){
+  ######## 确定这篇文章是作者引用还是数字引用
+  ## 利用 \protect\hyperlink{ref-howell2012statistical}{***} 这个*** 是数字还是字母混合
+  ## 数字范围1  数字字母混合范围0
+  extra_text = str_extract_all(tex_show,'(\\\\protect\\\\hyperlink\\{ref-[0-9A-Za-z\\-]*?)(\\}\\{)(.*?)(\\})')
+  extra_text_1 = str_replace_all(extra_text,'(\\\\protect\\\\hyperlink\\{ref-[0-9A-Za-z\\-]*?)(\\}\\{)(.*?)(\\})$','\\3')
+  extra_text_1 = str_replace_all(extra_text_1,'^\\{\\[\\}(.*?)\\{\\]\\}$','\\1')
+  # 删除取错的字符如{ [
+  extra_text_1 = str_replace_all(extra_text_1,'[\\{\\}\\[\\]]',"")
+  ## 检测是否为空字符串
+  if( all(nchar(extra_text_1) == 0) ){
+    is_type = 1;  # 如果为空字符串,则表明为数字标签
+    return(is_type)
+  }
 
-  key_show = stringr::str_extract_all(tex_show,'(?<=\\\\protect\\\\hyperlink\\{ref-)(.*?)(?=\\})',simplify=TRUE)
-  word_show = stringr::str_replace_all(tex_show,'\\\\protect\\\\hyperlink\\{ref-.*?\\}','')
+  ## 利用正则表达式 -- 检测提取到的是否存在非数字
+  if( all(grepl('[a-zA-Z]+?',extra_text_1)) ){
+    # 表明是非数字标签
+    is_type = 0
+  }else{
+    temp = as.numeric(extra_text_1)
+    if(any(!is.na(temp))){
+      # 表明有数字转换成功--说明是数字标签
+      is_type = 1
+    }else{
+      # 表明是非数字标签
+      is_type = 0
+    }
+  }
+  return(is_type)
+}
 
-  # 处理多余的大括号-- 处理大括号
-  word_show = stringr::str_replace_all(word_show,'([^\\\\])(\\{)([^ ]*?)(\\})','\\1\\3')
-  # word 部分进行删除, 删除数字标签 {[}三个数字以内{]}
-  word_show = str_replace_all(word_show, '^\\{\\[\\}[0-9]{0,3}\\{\\]\\}$','')
+style_fun = function(texfile){
+  #texfile='/Users/zsc/Desktop/未命名文件夹/我的论文终稿/shiny测试/stylefile/ams-review.tex'
+  tex =  readLines(texfile, encoding = "UTF-8")
+  style_raw = paste0(tex ,collapse = "\n")     # 直接返回rmd生成的tex文件样式
 
-  show_df = data.frame('key' = key_show,'word'=word_show)
+  #clear_file()
+  tex_show = tidy_tex(tex)
+  #####  合并完成了######
+  is_type = cls_type(tex_show)# 1表示数字标签, 0 表示作者标签
+  if(is_type){
+    # 数字标签
+    ########## 从tex_show 找那个提取 bibkey
+    extra_text = str_extract_all(tex_show,'(\\\\protect\\\\hyperlink\\{ref-[0-9A-Za-z\\-]*?)(\\}\\{)(.*?)(\\})')
+    extra_text_1 = str_replace_all(extra_text,'(\\\\protect\\\\hyperlink\\{ref-[0-9A-Za-z\\-]*?)(\\}\\{)(.*?)(\\}$)','\\3')
+    extra_text_1 = str_replace_all(extra_text_1,'^\\{\\[\\}(.*?)\\{\\]\\}$','\\1')
+    # 删除取错的字符如{ [
+    extra_text_1 = str_replace_all(extra_text_1,'[\\{\\}\\[\\]]',"")
+    word_show = extra_text_1
+
+    key_show = str_replace_all(extra_text,'\\\\protect\\\\hyperlink\\{ref-([0-9A-Za-z\\-]*?)\\}\\{(.*?)(\\}$)','\\1')
+
+    show_df = data.frame('key' = key_show,'word'=word_show)
+
+  }else{
+    # 表明是非数字标签--- 即 作者标签
+    ########## 从tex_show 找那个提取 bibkey
+    extra_text = str_extract_all(tex_show,'(\\\\protect\\\\hyperlink\\{ref-[0-9A-Za-z\\-]*?)(\\}\\{)(.*?)(\\})')
+    extra_text_1 = str_replace_all(extra_text,'(\\\\protect\\\\hyperlink\\{ref-[0-9A-Za-z\\-]*?)(\\}\\{)(.*?)(\\}$)','\\3')
+    extra_text_1 = str_replace_all(extra_text_1,'^\\{\\[\\}(.*?)\\{\\]\\}$','\\1')
+    word_show = extra_text_1
+    key_show = str_replace_all(extra_text,'\\\\protect\\\\hyperlink\\{ref-([0-9A-Za-z\\-]*?)\\}\\{(.*?)(\\}$)','\\1')
+    show_df = data.frame('key' = key_show,'word'=word_show)
+  }
+
   # 参考文献部分
-  ind_end  = grep("\\\\end\\{cslreferences\\}",tex)
-  to2 = grep('\\\\begin\\{cslreferences\\}',tex)
+  ind_end  = grep("\\\\end\\{cslreferences\\}",tex,ignore.case = T)
+  to2 = grep('\\\\begin\\{cslreferences\\}',tex,ignore.case = T)
   if(is_empty(to2)){
+    clear_file()
     stop("参考文献没有开始标记")
   }
   if(is_empty(ind_end)){
+    clear_file()
     stop('参考文献没有结束标记')
   }
 
   tex_sub = tex[(to2 + 1):(ind_end - 1)] # 提取tex 的一个子页面
-  ## 6. 处理tex_sub的参考文献字段,使其变为bibitem样式
-  ##### 6.1 把tex_sub中的 '\leavevmode\hypertarget{ref-****}{}%'  字段变成'\bibitem{***}' 字段
-  key_index = grep('(?<=\\\\leavevmode\\\\hypertarget\\{ref-)(.*?)(?=\\})',tex_sub,perl = TRUE)
-  tex_sub_new = str_replace(tex_sub,'(^\\\\leavevmode\\\\hypertarget\\{ref-)(.*?)(\\})(\\{\\}%$)',replacement= "\\2")
-  ##### 6.2 把tex_sub_new 中的key标签下一行的 {[}**{]} 给替换为空
-  tex_sub_new = str_replace_all(tex_sub_new,"(^\\{\\[\\}[0-9]{0,3}\\{\\]\\})( ){0,}",'') %>% str_trim(.,side = "both") # 特殊情况处理
-  #### 6.3 把标签key用上面显示的文本进行替换, 没找到则用空进行替换
-  for (i in key_index) {
-    value_temp = show_df[show_df[['key']] == tex_sub_new[i], 2]
-    if (!is_empty(value_temp) ) {
-      tex_sub_new[i] = paste0('\\bibitem{',tex_sub_new[i],'}{',value_temp,'}')
-    }else{
-      tex_sub_new[i] = paste0('\\bibitem{',tex_sub_new[i],'}{}')
+  ### 同样,根据数字或作者类型 提取 参考文献 部分
+  ## 进行分类处理
+  if(is_type){
+    # 如果是数字格式
+    ### 新版本中还要提取 CSLRightInline  CSLLeftMargin  (rmarkdown 2.6,knitr 1.30,pandoc_version 2.11.2)
+
+    # 删除 \\CSLLeftMargin{{[}44{]} } 行
+    ind = grepl('^\\\\CSLLeftMargin',tex_sub,perl = T,ignore.case = T)
+    tex_sub_new = tex_sub[!ind]
+    ## 把字符 CSLRightInline 替换为空
+    tex_sub_new = str_replace(tex_sub_new,"^\\\\CSLRightInline\\{",'')
+    tex_sub_new = str_replace(tex_sub_new,"\\}$",'')
+
+    ##### 6.1 把tex_sub中的 '\leavevmode\hypertarget{ref-****}{}%'  字段变成'\bibitem{***}' 字段
+    key_index = grep('(?<=\\\\leavevmode\\\\hypertarget\\{ref-)(.*?)(?=\\})',tex_sub,perl = TRUE)
+    tex_sub_new = str_replace(tex_sub_new,'(^\\\\leavevmode\\\\hypertarget\\{ref-)(.*?)(\\})(\\{\\}%$)',replacement= "\\\\bibitem{\\2} ")
+
+    ## 删除 {[}M{]}  这样的格式, 保留中间的字母
+    tex_sub_new = str_replace_all(tex_sub_new,"(^\\{\\[\\}[0-9]{0,3}\\{\\]\\})( ){0,}",'') %>% str_trim(.,side = "both") # 特殊情况处理
+    tex_sub_new = str_replace_all(tex_sub_new,"\\{\\[\\}(.*?)\\{\\]\\}",'[\\1]') %>% str_trim(.,side = "both") # 特殊情况处理
+    #### 样式1 ----  每一个参考文献在不同行
+    style_1 = c('\\section*{References}', '\\begin{thebibliography}{99}',tex_sub_new,'\\end{thebibliography}')
+    style_1 = paste(style_1,collapse = "\n") #
+
+    #### 样式2 ---- 每一个参考文献在同一行
+    tex_sub_new[tex_sub_new == ""] = "\n\n"
+    style_2 = c('\\section*{References}\n\n', '\\begin{thebibliography}{99}\n\n',tex_sub_new,'\n\n\\end{thebibliography}')
+    style_2 = paste(style_2, collapse = " ")
+    style_2 = str_replace_all(style_2, pattern = " {2,}",replacement = " ") # 处理多余的空格 或 [:blank:]
+    style_2 =  str_replace_all(style_2, pattern = "\n\n ",replacement = "\n\n") # 处理换行后的空格
+    return(list(style_1,style_2,style_raw,is_type))
+  }else{
+    # 如果是作者格式
+    #### 6, 首先处理tex_sub的参考文献字段,使其变为bibitem样式
+    ##### 6.1 把tex_sub中的 '\leavevmode\hypertarget{ref-****}{}%'  字段变成'\bibitem{***}' 字段
+    key_index = grep('(?<=\\\\leavevmode\\\\hypertarget\\{ref-)(.*?)(?=\\})',tex_sub,perl = TRUE)
+    tex_sub_new = str_replace(tex_sub,'(^\\\\leavevmode\\\\hypertarget\\{ref-)(.*?)(\\})(\\{\\}%$)',replacement= "\\2")
+    ##### 6.2 如果tex_sub_new 存在这种样式的 key{[}***{]} 给替换为空
+    tex_sub_new = str_replace_all(tex_sub_new,"(^\\{\\[\\}[0-9]{0,3}\\{\\]\\})( ){0,}",'') %>% str_trim(.,side = "both") # 特殊情况处理
+    tex_sub_new = str_replace_all(tex_sub_new,"\\{\\[\\}(.*?)\\{\\]\\}",'[\\1]') %>% str_trim(.,side = "both") # 特殊情况处理
+    #### 6.3 把标签key用上面显示的文本进行替换, 没找到则用空进行替换
+    for (i in key_index) {
+      value_temp = show_df[show_df[['key']] == tex_sub_new[i], 2] #赋值
+      if ( !is_empty(value_temp) ) {
+        tex_sub_new[i] = paste0('\\bibitem[',value_temp,']{',tex_sub_new[i],'}')
+      }else{
+        tex_sub_new[i] = paste0('\\bibitem[]{',tex_sub_new[i],'}')
+      }
     }
+
+    ### 样式0 ---- 返回rmd处理的最原始的引用样式
+    # style_raw = paste0(tex[to2:ind_end] ,collapse = "\n")
+
+    #### 样式1 ----  每一个参考文献在不同行
+    style_1 = c('\\section*{References}', '\\begin{thebibliography}{99}',tex_sub_new,'\\end{thebibliography}')
+    style_1 = paste(style_1,collapse = "\n") #
+    #### 样式2 ---- 每一个参考文献在同一行
+    tex_sub_new[tex_sub_new == ""] = "\n\n"
+    style_2 = c('\\section*{References}\n\n', '\\begin{thebibliography}{99}\n\n',tex_sub_new,'\n\n\\end{thebibliography}')
+    style_2 = paste(style_2, collapse = " ")
+    style_2 = str_replace_all(style_2, pattern = " {2,}",replacement = " ") # 处理多余的空格 或 [:blank:]
+    style_2 =  str_replace_all(style_2, pattern = "\n\n ",replacement = "\n\n") # 处理换行后的空格
+    return(list(style_1,style_2,style_raw,is_type))
   }
-  ### 样式0 ---- 返回rmd处理的最原始的引用样式
-  # style_0 = paste0(tex[to2:ind_end] ,collapse = "\n")
-
-  #### 样式1 ----  每一个参考文献在不同行
-  style_1 = c('\\section*{References}', '\\begin{thebibliography}{99}',tex_sub_new,'\\end{thebibliography}')
-  style_1 = paste(style_1,collapse = "\n") #
-
-  #### 样式2 ---- 每一个参考文献在同一行
-  tex_sub_new[tex_sub_new == ""] = "\n\n"
-  style_2 = c('\\section*{References}\n\n', '\\begin{thebibliography}{99}\n\n',tex_sub_new,'\n\n\\end{thebibliography}')
-  style_2 = paste(style_2, collapse = " ")
-  style_2 = str_replace_all(style_2, pattern = " {2,}",replacement = " ") # 处理多余的空格 或 [:blank:]
-  style_2 =  str_replace_all(style_2, pattern = "\n\n ",replacement = "\n\n") # 处理换行后的空格
-  return(list(style_1,style_2,style_0))
 }
 
 extract_key = function(texfile){
@@ -225,9 +323,11 @@ reorder_bib_fun = function(filepath){
   m = length(index)
   index2 = c(index[2:m],length(tex_bib))
   if(length(index) != length(index2)){
+    clear_file()
     stop('cite长度不等')
   }
   if(length(index)==0){
+    clear_file()
     stop('cite长度居然为0,直接退出')
   }
   tex_bib_he = mapply(function(x,y){paste(tex_bib[x:(y-1)],collapse = '')}, index,index2)
@@ -312,19 +412,25 @@ ui <- fluidPage(
              dataTableOutput(outputId="jouranl_abbr")
     ),
     tabPanel("Abbr source",
-             helpText("注意:最终的结果可能还需要细调"),
+             helpText("注意:最终的结果可能还需要细调", br(),
+                      "如果是非数字标签,可能还需要引用 natbib 宏包,并且使用 \\citep{***} 来引用"),
              dataTableOutput(outputId="abbrsource")
     ),
     tabPanel("Style 1",
-             helpText("注意:最终的结果可能还需要细调"),
+             helpText("注意:最终的结果可能还需要细调", br(),
+                      "如果是非数字标签,可能还需要引用 natbib 宏包,并且使用 \\citep{***} 来引用"),
+             verbatimTextOutput("out_is_clstype1"),
              uiOutput("out_style1_clip"),
              verbatimTextOutput("out_style1")),
     tabPanel("Style 2",
-             helpText("注意:最终的结果可能还需要细调"),
+             helpText("注意:最终的结果可能还需要细调", br(),
+                      "如果是非数字标签,可能还需要引用 natbib 宏包,并且使用 \\citep{***} 来引用"),
+             verbatimTextOutput("out_is_clstype2"),
              uiOutput("out_style2_clip"),
              verbatimTextOutput("out_style2")),
     tabPanel("Style 0",
              helpText("注意:最终的结果可能还需要细调"),
+             verbatimTextOutput("out_is_clstype0"),
              uiOutput("out_style0_clip"),
              verbatimTextOutput("out_style0")),
     tabPanel("Cite bib",
@@ -363,14 +469,15 @@ ui <- fluidPage(
              # 自适应宽度
              textAreaInput("Journame", "Journal name", value = "", width = "100%",rows = 10, resize = "both") %>%
                shiny::tagAppendAttributes(style = 'width: 100%;'),
-             helpText("以行为单位进行包含查询(忽略大小写与两边的空格,以及不查询期刊名字符个数小于5的期刊)"),
+             helpText("以行为单位进行包含查询(忽略大小写、两边的空格和中间多余的空格只保留一个,以及不查询期刊名字符个数小于4的期刊)"),
+             helpText("最多返回400条数据,希望能提供精确输入"),
              actionButton("goJournameQuery", "Submit"),
              dataTableOutput(outputId="JournameAbbr")
     ),
     tabPanel("Reorder thebibliography",
              wellPanel(
-             fileInput("file_bibtex", "Choose tex File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.tex')),
-             actionButton("ReorderBibSubmit", "Submit")
+               fileInput("file_bibtex", "Choose tex File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.tex')),
+               actionButton("ReorderBibSubmit", "Submit")
              ),
              helpText("tex文本中引用了,但是 thebib环境中没有的key"),
              fluidRow(
@@ -442,6 +549,7 @@ server <- function(input, output) {
       },
       error = function(e) {
         # return a safeError if a parsing error occurs
+        clear_file()
         stop(safeError(e))
       }
     )
@@ -459,6 +567,7 @@ server <- function(input, output) {
     tex_diff = !is.na(df$key)  & is.na(df$sitenum) # tex 有 , 而bib没有
     if(sum(tex_diff) >=1){
       s = paste0(df$key[tex_diff],collapse = "\n")
+      clear_file()
       stop(paste0("出错,以下参考文献在tex文件中引用了,但是在数据库中不存在该文献!!\n", s,'\n请检查key后重新运行') )
     }else{
 
@@ -487,12 +596,14 @@ server <- function(input, output) {
   ######  期刊缩写查询  开始 #######
   journamevalue <- eventReactive(input$goJournameQuery, {
     Journame = input$Journame
-    Journame_lower = str_to_lower(Journame)#把输入的秩转变为小写
+    Journame = str_replace_all(Journame,'( ){2,}',' ')
+    Journame_lower = str_to_lower(Journame)#把输入的值转变为小写
     # 分割---以换行符分割
     Journame_lower = str_split(Journame_lower,pattern = '\\n')[[1]] %>%
       str_trim(., side ="both")
     l = nchar(Journame_lower) # 检查输入的长度
-    Journame_lower = Journame_lower[l>4] # 过滤长度小于4的期刊
+    Journame_lower = Journame_lower[l>=4] # 过滤长度小于4的期刊
+    Journame_lower = str_replace_all(Journame_lower,'( ){2,}',' ')
     # Unicode to UTF-8
     # abbrTable = as.data.table(abbrTable)
     # abbrTable = abbrTable[,lapply(.SD, function(x)stringi::stri_escape_unicode(x))]
@@ -508,7 +619,12 @@ server <- function(input, output) {
     }
   })
   output$JournameAbbr <- renderDataTable({
-    journamevalue()
+    temp = journamevalue()
+    if(nrow(temp) > 400){
+      #warning('查询返回的数量太多,您可能需要重新定位.最多返回300条数据')
+      temp = temp[1:400]
+    }
+    temp
   },options = list(pageLength = 100))
   ######  期刊缩写查询  结束 #######
   #######################################################
@@ -523,10 +639,12 @@ server <- function(input, output) {
         texpath = input$file_bibtex$datapath
         #texpath = '/Users/zsc/Desktop/未命名文件夹/我的论文终稿/参考文献排序/MeasuringTrans02的副本.tex'
         list_df = reorder_bib_fun(filepath = texpath)
+        clear_file()
         return(list_df)
       },
       error = function(e) {
         # return a safeError if a parsing error occurs
+        clear_file()
         stop(safeError(e))
       }
     )
@@ -591,7 +709,33 @@ server <- function(input, output) {
     rclipButton("out_style0_clip", "style0 Copy", tex_cite_style()[[3]], icon("clipboard"))
   })
 
-
+  ##########################################
+  #####  输出参考文献的类型,
+  ##### 1 表示数字标签  0 表示非数字标签,即作者年份标签################
+  output$out_is_clstype1 <- renderText({
+    is_type = tex_cite_style()[[4]]
+    if(is_type){
+      "1 == 数字标签"
+    }else{
+      "0 === 非数字标签"
+    }
+  })
+  output$out_is_clstype2 <- renderText({
+    is_type = tex_cite_style()[[4]]
+    if(is_type){
+      "1 == 数字标签"
+    }else{
+      "0 === 非数字标签"
+    }
+  })
+  output$out_is_clstype0 <- renderText({
+    is_type = tex_cite_style()[[4]]
+    if(is_type){
+      "1 == 数字标签"
+    }else{
+      "0 === 非数字标签"
+    }
+  })
   ##########################################
   ##### 输出引用的bib和key################
   out_yinyong = reactive({
@@ -676,7 +820,11 @@ server <- function(input, output) {
   ############################################
   ###### 输出运行环境 ####################
   output$out_runenvir <- renderPrint({
-    print(list(sessionInfo(),dir()))
+    print(list("sessionInfo"=sessionInfo(),
+               "RStudio.Version"=RStudio.Version(),
+               "devtools::session_info"=devtools::session_info(),
+               "pandoc_version" = rmarkdown::pandoc_version(),
+               "dir"=dir()))
   })
   ############################################
   ###### 输出期刊缩写对照表 ################
@@ -700,7 +848,7 @@ server <- function(input, output) {
       temp = data.frame('NOTE'='整个bib没有找到对应的缩写!!!')
       return(temp)
     }else{
-    return(abbrtable)
+      return(abbrtable)
     }
   },options = list(pageLength = 100)
   )
