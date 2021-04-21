@@ -34,4 +34,11 @@ The BibTeX \code{tibble} is written to a .bib file.
 }
 \examples{
 # Read from .bib file:
+require(journalabbr)
+path = system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
+bib <- read_bib2tib(path)
+
+# Write to .bib file:
+write_tib2bib(bib, file = tempfile(fileext = ".bib"))
+# Use `append = TRUE` to add lines to an existing .bib file:
 }

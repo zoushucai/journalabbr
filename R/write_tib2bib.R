@@ -11,17 +11,16 @@
 #' @importFrom purrr map map2
 #' @importFrom rlang is_empty
 #' @importFrom dplyr arrange
-#' @export
 #' @examples
 #' # Read from .bib file:
-# require(journalabbr)
-# path = system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
-# bib <- read_bib2tib(path)
-#
-# # Write to .bib file:
-# write_tib2bib(bib, file = tempfile(fileext = ".bib"))
-
-# Use `append = TRUE` to add lines to an existing .bib file:
+#' require(journalabbr)
+#' path = system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
+#' bib <- read_bib2tib(path)
+#'
+#' # Write to .bib file:
+#' write_tib2bib(bib, file = tempfile(fileext = ".bib"))
+#' # Use `append = TRUE` to add lines to an existing .bib file:
+#' @export
 
 
 write_tib2bib = function(tib,
