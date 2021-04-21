@@ -363,14 +363,15 @@ ui <- fluidPage(
              # 自适应宽度
              textAreaInput("Journame", "Journal name", value = "", width = "100%",rows = 10, resize = "both") %>%
                shiny::tagAppendAttributes(style = 'width: 100%;'),
-             helpText("以行为单位进行包含查询(忽略大小写与两边的空格,以及不查询期刊名字符个数小于5的期刊)"),
+             helpText("以行为单位进行包含查询(忽略大小写、两边的空格和中间多余的空格只保留一个,以及不查询期刊名字符个数小于4的期刊)"),
+             helpText("最多返回400条数据,希望能提供精确输入"),
              actionButton("goJournameQuery", "Submit"),
              dataTableOutput(outputId="JournameAbbr")
     ),
     tabPanel("Reorder thebibliography",
              wellPanel(
-             fileInput("file_bibtex", "Choose tex File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.tex')),
-             actionButton("ReorderBibSubmit", "Submit")
+               fileInput("file_bibtex", "Choose tex File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.tex')),
+               actionButton("ReorderBibSubmit", "Submit")
              ),
              helpText("tex文本中引用了,但是 thebib环境中没有的key"),
              fluidRow(
@@ -487,12 +488,14 @@ server <- function(input, output) {
   ######  期刊缩写查询  开始 #######
   journamevalue <- eventReactive(input$goJournameQuery, {
     Journame = input$Journame
-    Journame_lower = str_to_lower(Journame)#把输入的秩转变为小写
+    Journame = str_replace_all(Journame,'( ){2,}',' ')
+    Journame_lower = str_to_lower(Journame)#把输入的值转变为小写
     # 分割---以换行符分割
     Journame_lower = str_split(Journame_lower,pattern = '\\n')[[1]] %>%
       str_trim(., side ="both")
     l = nchar(Journame_lower) # 检查输入的长度
-    Journame_lower = Journame_lower[l>4] # 过滤长度小于4的期刊
+    Journame_lower = Journame_lower[l>=4] # 过滤长度小于4的期刊
+    Journame_lower = str_replace_all(Journame_lower,'( ){2,}',' ')
     # Unicode to UTF-8
     # abbrTable = as.data.table(abbrTable)
     # abbrTable = abbrTable[,lapply(.SD, function(x)stringi::stri_escape_unicode(x))]
@@ -508,7 +511,12 @@ server <- function(input, output) {
     }
   })
   output$JournameAbbr <- renderDataTable({
-    journamevalue()
+    temp = journamevalue()
+    if(nrow(temp) > 400){
+      #warning('查询返回的数量太多,您可能需要重新定位.最多返回300条数据')
+      temp = temp[1:400]
+    }
+    temp
   },options = list(pageLength = 100))
   ######  期刊缩写查询  结束 #######
   #######################################################
@@ -700,7 +708,7 @@ server <- function(input, output) {
       temp = data.frame('NOTE'='整个bib没有找到对应的缩写!!!')
       return(temp)
     }else{
-    return(abbrtable)
+      return(abbrtable)
     }
   },options = list(pageLength = 100)
   )
