@@ -70,7 +70,7 @@ combine_journal_lists = function(){
   colnames(dt_3)
 
   dt = list(dt_1,dt_2,dt_3)  %>% rbindlist(., use.names=TRUE, fill=TRUE) %>% unique()
-  sprintf("and 与& 替换后并合并以后一共有 %d 篇期刊\n", dt[,.N]) %>% cat
+  sprintf("and 与 & 替换后并合并以后一共有 %d 篇期刊\n", dt[,.N]) %>% cat
 
   #setorder(dt, journal)# 重新排序--为什么
   ###########################
@@ -89,12 +89,12 @@ combine_journal_lists = function(){
   #   temp = which(count_dot == max(count_dot))
   #   ifelse(length(temp) == 1, temp, which.min(abbr_len))
   # }], by = journal_lower]$V1,]
-  sprintf("最后,整理后期刊具有缩写的一共用%d篇\n", dtf[, .N]) %>% cat
+  sprintf("最后, 整理后期刊具有缩写的一共用%d篇\n", dtf[, .N]) %>% cat
   library(stringi)
   dtf = lapply(dtf,function(x)stri_escape_unicode(x))
   #dtf = dtf[,lapply(.SD, function(x)stringi::stri_escape_unicode(x))]
   abbrTable = as.data.frame(dtf)
-  usethis::use_data(abbrTable, internal = TRUE,overwrite = TRUE)
+  usethis::use_data(abbrTable, compress = "xz", internal = TRUE,overwrite = TRUE,version=3)
   # 这样可以在任何内部函数中使用,并且不需要加载
   # file.copy(from = './R/sysdata.rda', to = './data/abbrTable.rda',overwrite=T)
 }
