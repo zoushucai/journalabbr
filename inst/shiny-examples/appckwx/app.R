@@ -364,7 +364,11 @@ reorder_bib_fun = function(filepath){
 clear_file()
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-  titlePanel( title = h2("自用参考文献样式调整", align = "left"), windowTitle = '自用参考文献样式调整' ),
+  titlePanel( title = h2("自用参考文献样式调整", align = "center"), windowTitle = '自用参考文献样式调整' ),
+  HTML("<p>注意: 1. 上传的tex文件最好能够在本地正常编译</p>"),
+  HTML("<p>&emsp;&emsp; &ensp; 2. 上传的bib文件仔细检查,这个涉及到最后的生成格式. 例如: 三个字的中国作者,eg: Shucai, Zou  应该写为 Shu-Cai, Zou </p>"),
+  HTML("<p>&emsp;&emsp; &ensp; 3. bug反馈:&nbsp;&nbsp; <a href='https://github.com/zoushucai/shiny_cankaowenxian/issues'>https://github.com/zoushucai/shiny_cankaowenxian/issues </a> or
+       <a href='https://github.com/zoushucai/journalabbr/issues'>https://github.com/zoushucai/journalabbr/issues </a> </p>"),
   rclipboardSetup(), # 剪切板设置,必须在开头声明,后面才能用,这是一段js的调用
   tabsetPanel(
     tabPanel("Input",
@@ -821,7 +825,6 @@ server <- function(input, output) {
   ###### 输出运行环境 ####################
   output$out_runenvir <- renderPrint({
     print(list("sessionInfo"=sessionInfo(),
-               "RStudio.Version"=RStudio.Version(),
                "devtools::session_info"=devtools::session_info(),
                "pandoc_version" = rmarkdown::pandoc_version(),
                "dir"=dir()))
