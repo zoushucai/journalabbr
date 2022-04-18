@@ -1,15 +1,10 @@
-library(shiny)
-library(stringr)
-library(stringi)
-library(data.table)
-require(rclipboard)
-library(knitr)
-library(rmarkdown)
-library(purrr)
-library(dplyr)
-library(tinytex)
-library(DT)
-library(journalabbr)
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load("shiny", "stringr", "stringi", "data.table",
+               "rclipboard", "knitr", "rmarkdown", "purrr", "dplyr",
+               'tinytex','DT','journalabbr')
+
+
+
 #library(lubridate)
 #options(shiny.fullstacktrace = TRUE)
 options(shiny.sanitize.errors = FALSE)
