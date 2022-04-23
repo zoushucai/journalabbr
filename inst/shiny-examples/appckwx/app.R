@@ -371,6 +371,7 @@ ui <- fluidPage(
                fileInput("file1_tex", "Choose tex File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.tex')),
                fileInput("file2_csl", "Choose csl File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.csl')),
                fileInput("file3_bib", "Choose bib File(文件编码:UTF-8)", accept = c("text/csv","text/comma-separated-values,text/plain",'.bbl')),
+               #fileInput("file4_addcsv", "Choose csv File(文件编码:UTF-8)", accept = c("text/csv","text/semicolon-separated-values,text/plain",'.csv')),
 
                fluidRow(
                  column(4,
@@ -400,7 +401,7 @@ ui <- fluidPage(
                actionButton("goButton", "Submit")
              )),
     tabPanel("Warning",
-             helpText("1, 上传文件时采用 UTF-8 编码.", br(),
+             helpText("1, 上传文件时采用 UTF-8 编码(不支持自定义期刊缩写).", br(),
                       "2, 上传文件到生成参考文献样式,需要花一定时间,还请耐心等待.",br(),
                       "3, 最终输出的参考文献结果还需要仔细检查,符合期刊要求.")
              #,HTML("<p><font color='red'>\n警告显示如下:\n</font></p>")  # 方法一:  直接使用HTML标签

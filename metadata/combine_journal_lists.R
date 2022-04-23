@@ -59,6 +59,8 @@ combine_journal_lists = function(){
 
   dt_1 = copy(dt)
   dt_2 = copy(dt)
+  dt_3 = copy(dt)
+
 
   dt_1[,journal:=str_replace_all(journal,'(?<= )\\&(?= )','&')]
   dt_1[,journal:=str_replace_all(journal,'(?<= )\\\\&(?= )','&')]
@@ -68,23 +70,28 @@ combine_journal_lists = function(){
   dt_2[,journal:=str_replace_all(journal,'(?<= )\\\\&(?= )','and')]
   dt_2[,journal:=str_replace_all(journal,'(?<= )\\&(?= )','and')]
 
+  dt_3[,journal:=str_replace_all(journal, '(?<= )&(?= )','\\\\&')] # 提取& 符号,且& 前后有空格
+  dt_3[,journal:=str_replace_all(journal,'(?<= )[aA][nN][dD](?= )','\\\\&')]
+  dt_3[,journal:=str_replace_all(journal,'(?<= )\\&(?= )','\\\\&')]
 
-  dt = list(dt_1,dt_2)  %>% rbindlist(., use.names=TRUE, fill=TRUE) %>% unique()
+
+  dt = list(dt_1,dt_2,dt_3)  %>% rbindlist(., use.names=TRUE, fill=TRUE) %>% unique()
   sprintf("and 与 & 替换后并合并以后一共有 %d 篇期刊\n", dt[,.N]) %>% cat
 
 
-  ## 删除具有反斜杠的行 以及正斜杠 -- 期刊太特殊了
-  dt = dt[!grepl(pattern = '\\\\',journal), ]
-  dt = dt[!grepl(pattern = '\\\\',journal_abbr), ]
-  dt = dt[!grepl(pattern = '/{1,10}',journal), ] # 正斜杠的行,有些期刊有,但是太少了,不加入
-  dt = dt[!grepl(pattern = '/{1,10}',journal_abbr), ]
-  ## 删除具有双引号的行 -- 期刊太特殊了
-  dt = dt[!grepl(pattern = '"',journal),]
-  dt = dt[!grepl(pattern = '"',journal_abbr),]
+  # ## 删除具有反斜杠的行 以及正斜杠 -- 期刊太特殊了
+  # dt = dt[!grepl(pattern = '\\\\',journal), ]
+  # dt = dt[!grepl(pattern = '\\\\',journal_abbr), ]
+  # dt = dt[!grepl(pattern = '/{1,10}',journal), ] # 正斜杠的行,有些期刊有,但是太少了,不加入
+  # dt = dt[!grepl(pattern = '/{1,10}',journal_abbr), ]
+  # ## 删除具有双引号的行 -- 期刊太特殊了
+  # dt = dt[!grepl(pattern = '"',journal),]
+  # dt = dt[!grepl(pattern = '"',journal_abbr),]
+  #
+  # ### 删除 原始的 journal字段超过 80 个字符的期刊
+  # dt[,journal_len := nchar(journal)]
+  # dt = dt[journal_len<=80,]
 
-  ### 删除 原始的 journal字段超过 80 个字符的期刊
-  dt[,journal_len := nchar(journal)]
-  dt = dt[journal_len<=80,]
 
   #setorder(dt, journal)# 重新排序--为什么
   ###########################
@@ -93,16 +100,11 @@ combine_journal_lists = function(){
   dt[,journal_lower :=str_trim(str_to_lower(journal), side = 'both')]
   dt[,count_dot := str_count(journal_abbr,'\\.')]  ##### 计算缩写字段中带点的个数
   dt[,abbr_len := str_length(journal_abbr)]### 计算缩写字段的长度
-  #### 去除重复项, 按照 journal 期刊进行分组,
+  #### 去除重复项, 按照 journal_lower 期刊进行分组,
   #### 并找出各个分组中 count_dot 值最大的行,如有多个最大值,则选择缩写字段最少的那个
   ## 方法一:
-  dtf = dt[dt[, .I[order(-count_dot,abbr_len)[1]], by=journal]$V1,]
-  #fwrite(dtf_t,file = '../b.csv')
-  ## 方法二:
-  # dtf = dt[dt[, .I[{
-  #   temp = which(count_dot == max(count_dot))
-  #   ifelse(length(temp) == 1, temp, which.min(abbr_len))
-  # }], by = journal]$V1,]
+  dtf = dt[dt[, .I[order(-count_dot,abbr_len)[1]], by=journal_lower]$V1,]
+
   sprintf("最后, 整理后期刊具有缩写的一共用%d篇\n", dtf[, .N]) %>% cat
   library(stringi)
   dtf = lapply(dtf,function(x)stri_escape_unicode(x))

@@ -4,12 +4,27 @@
 \alias{abbr2bib}
 \title{Journal field abbreviation of BibTeX file}
 \usage{
-abbr2bib(file, outfile = tempfile(fileext = ".bib"))
+abbr2bib(
+  file,
+  outfile = tempfile(fileext = ".bib"),
+  addcsvpath = "",
+  csvsep = ";",
+  csvheader = FALSE,
+  ...
+)
 }
 \arguments{
 \item{file}{character, input a .bib file.}
 
 \item{outfile}{character, file path to write the .bib file. An empty character string writes to \code{stdout} (default).}
+
+\item{addcsvpath}{path, Users can customize the path of journal abbreviation. The CSV file requires semicolon to segment data without header. The first column is the full name of the journal and the second column is the journal abbreviation.}
+
+\item{csvsep}{character, Customize the separator of CSV files. The default is semicolon, that is \code{;}.}
+
+\item{csvheader}{logical, By default \code{FALSE}.}
+
+\item{...}{(generalized), Parameters from \code{data.table::fread}.}
 }
 \value{
 {
@@ -31,6 +46,10 @@ Input Bib file with complete journal, output Bib file after abbreviation of jour
 require(journalabbr)
 path = system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
 temptab = abbr2bib(file = path, outfile =  tempfile(fileext = ".bib"))
+
+# add user csv
+csvpath = system.file("extdata", "myabbr.csv", package = "journalabbr", mustWork = TRUE)
+temptab1 = abbr2bib(file = path, outfile =  tempfile(fileext = ".bib"), addcsvpath = csvpath)
 
 }
 \keyword{List}

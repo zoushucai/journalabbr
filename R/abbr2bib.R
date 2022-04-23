@@ -7,8 +7,13 @@
 #' @importFrom dplyr left_join
 #' @importFrom httr GET
 #' @importFrom purrr map
+#' @import data.table
 #' @param file character, input a .bib file.
 #' @param outfile character, file path to write the .bib file. An empty character string writes to \code{stdout} (default).
+#' @param addcsvpath path, Users can customize the path of journal abbreviation. The CSV file requires semicolon to segment data without header. The first column is the full name of the journal and the second column is the journal abbreviation.
+#' @param csvsep character, Customize the separator of CSV files. The default is semicolon, that is \code{;}.
+#' @param csvheader logical, By default \code{FALSE}.
+#' @param ... (generalized), Parameters from \code{data.table::fread}.
 #' @return {
 #' output a new Bib file in the current directory,
 #' which only abbreviates the journal fields, and the rest remains unchanged.
@@ -28,8 +33,13 @@
 #' path = system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
 #' temptab = abbr2bib(file = path, outfile =  tempfile(fileext = ".bib"))
 #'
+#' # add user csv
+#' csvpath = system.file("extdata", "myabbr.csv", package = "journalabbr", mustWork = TRUE)
+#' temptab1 = abbr2bib(file = path, outfile =  tempfile(fileext = ".bib"), addcsvpath = csvpath)
+#'
 
-abbr2bib <- function(file, outfile = tempfile(fileext = ".bib")) {
+abbr2bib <- function(file, outfile = tempfile(fileext = ".bib"),
+                     addcsvpath = '', csvsep = ';',csvheader = FALSE,...) {
   if (!is.character(file)) {
     stop("Invalid file path: Non-character supplied.", call. = FALSE)
   }
@@ -53,6 +63,40 @@ abbr2bib <- function(file, outfile = tempfile(fileext = ".bib")) {
   }
   outfile <- normalizePath(outfile, mustWork = FALSE)
 
+
+  # Add user-defined journal abbreviations
+  tryCatch({
+      if (file.exists(addcsvpath)) {
+        cat('User defined journal abbreviations successfully used!\n')
+        usrabbr = data.table::fread(file = addcsvpath, sep = csvsep, header = csvheader, ...)
+        usrabbr = usrabbr[, lapply(.SD, function(x)str_trim(x,side = 'both'))]
+        temp_colname = colnames(usrabbr)
+        temp_colname[1:2] = c("V1","V2")
+        colnames(usrabbr) = temp_colname
+
+        usrabbr = usrabbr[,c("V1","V2"),with =F]
+        usrabbr$originFile='userabbrcsv'
+        data.table::setnames(usrabbr,c("V1","V2","originFile"),c("JOURNAL","journal_abbr","originFile")) # 重命名
+        usrabbr = unique(usrabbr)
+        if (nrow(usrabbr)  != length(unique(usrabbr$JOURNAL)) ) {
+          warning(sprintf('There are duplicate JOURNAL entries in user defined csv: %s\n Keep previous duplicate entries ',addcsvpath ))
+          usrabbr = usrabbr[!duplicated(usrabbr$JOURNAL)]
+          usrabbr = tibble::as_tibble(usrabbr)
+        }
+      }else{
+        #cat('The user-defined CSV file was not added, Adopt internal database\n')
+        usrabbr = NULL
+      }
+    },
+    error = function(e) {
+      usrabbr = NULL
+    }
+  )
+
+
+
+
+
   ############################################################
   ########### Read file -- establish corresponding relationship with built-in database
   item_tib = read_bib2tib(file)
@@ -68,9 +112,28 @@ abbr2bib <- function(file, outfile = tempfile(fileext = ".bib")) {
   abbrTable = as.data.frame(lapply(abbrTable, function(x)stringi::stri_unescape_unicode(x)))
   abbrTableSub = tibble::as_tibble(abbrTable)
   abbrTableSub = abbrTableSub[,c("journal_lower",'journal_abbr','originFile')]
+
   tib = dplyr::left_join(item_tib, abbrTableSub, by = "journal_lower")
 
   tib = tib[,c("JOURNAL","journal_abbr","originFile")]
+
+  # Merge user-defined data
+  if (!is.null(usrabbr)) {
+    usrabbr = tibble::as_tibble(usrabbr)
+    tib = tibble::as_tibble(tib)
+    tib_new = dplyr::left_join(tib,usrabbr,by=c('JOURNAL'='JOURNAL'),suffix=c(".inner",".user"))
+    tib_new$journal_abbr = ifelse(is.na(tib_new$journal_abbr.user),
+                                tib_new$journal_abbr.inner,
+                                tib_new$journal_abbr.user)
+    tib_new$originFile = ifelse(is.na(tib_new$originFile.user),
+                                tib_new$originFile.inner,
+                                tib_new$originFile.user)
+    if (nrow(tib) ==  nrow(tib_new)) {
+      tib = tib_new[,c("JOURNAL","journal_abbr","originFile")]
+    }else{
+      stop('erorr!!!')
+    }
+  }
   #########################################################
   #### If the abbreviation cannot be found,
   #### the original journal will be replaced directly
