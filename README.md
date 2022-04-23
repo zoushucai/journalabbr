@@ -41,12 +41,17 @@ Except for the `@`character line, the rest of the field lines must have an equal
 ## Use
 
 ``` r
-library(journalabbr)
+require(journalabbr)
 path = system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
 temptab = abbr2bib(file = path, outfile =  tempfile(fileext = ".bib"))
+# add user csv
+csvpath = system.file("extdata", "myabbr.csv", package = "journalabbr", mustWork = TRUE)
+temptab1 = abbr2bib(file = path, outfile =  tempfile(fileext = ".bib"), addcsvpath = csvpath)
+
 
 # or
 journalabbr::runExample()
+
 ```
 
 ### Access internal data
