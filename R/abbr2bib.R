@@ -69,7 +69,10 @@ abbr2bib <- function(file, outfile = tempfile(fileext = ".bib"),
       if (file.exists(addcsvpath)) {
         cat('User defined journal abbreviations successfully used!\n')
         usrabbr = data.table::fread(file = addcsvpath, sep = csvsep, header = csvheader, ...)
-        usrabbr = usrabbr[, lapply(.SD, function(x)str_trim(x,side = 'both'))]
+        usrabbr = usrabbr[, lapply(.SD, function(x){
+          temp = str_trim(x,side = 'both')
+          str_replace_all(temp,' {2,}',' ')
+          })]
         temp_colname = colnames(usrabbr)
         temp_colname[1:2] = c("V1","V2")
         colnames(usrabbr) = temp_colname
@@ -99,40 +102,56 @@ abbr2bib <- function(file, outfile = tempfile(fileext = ".bib"),
 
   ############################################################
   ########### Read file -- establish corresponding relationship with built-in database
+  item_tib=NULL
   item_tib = read_bib2tib(file)
-  item_tib$journal_lower = purrr::map_chr(item_tib$JOURNAL,function(x){
-    temp = str_trim(str_to_lower(x),side = 'both')
+  # # Method 1
+  # item_tib$journal_lower = purrr::map_chr(item_tib$JOURNAL,function(x){
+  #   temp = str_trim(str_to_lower(x),side = 'both')
+  #   gsub("[\t ]{2,}"," ", temp)
+  # })
+  #
+  # # Method 2
+  item_tib$JOURNAL = purrr::map_chr(item_tib$JOURNAL,function(x){
+    temp = str_trim(x,side = 'both')
     gsub("[\t ]{2,}"," ", temp)
   })
-  # # Unicode to UTF-8
-  # library(data.table)
-  # library(stringi)
-  # abbrTable = data.table::as.data.table(abbrTable)
-  # abbrTable = abbrTable[,lapply(.SD, function(x)stringi::stri_unescape_unicode(x))]
-  abbrTable = as.data.frame(lapply(abbrTable, function(x)stringi::stri_unescape_unicode(x)))
-  abbrTableSub = tibble::as_tibble(abbrTable)
+  item_tib$journal_lower = purrr::map_chr(item_tib$JOURNAL,str_to_lower )
+
+  ############################################################
+  ######## Load internal data
+  abbrTableSub = tibble::as_tibble(as.data.frame(lapply(abbrTable, function(x)stringi::stri_unescape_unicode(x))))
   abbrTableSub = abbrTableSub[,c("journal_lower",'journal_abbr','originFile')]
 
-  tib = dplyr::left_join(item_tib, abbrTableSub, by = "journal_lower")
-
+  tib = NULL
+  tib = dplyr::left_join(item_tib, abbrTableSub, by = c("journal_lower"="journal_lower"))
+  if (nrow(item_tib) != nrow(tib)) {
+    stop('Increase in the number of rows after consolidation')
+  }
   tib = tib[,c("JOURNAL","journal_abbr","originFile")]
 
   # Merge user-defined data
   if (!is.null(usrabbr)) {
     usrabbr = tibble::as_tibble(usrabbr)
     tib = tibble::as_tibble(tib)
-    tib_new = dplyr::left_join(tib,usrabbr,by=c('JOURNAL'='JOURNAL'),suffix=c(".inner",".user"))
-    tib_new$journal_abbr = ifelse(is.na(tib_new$journal_abbr.user),
-                                tib_new$journal_abbr.inner,
-                                tib_new$journal_abbr.user)
-    tib_new$originFile = ifelse(is.na(tib_new$originFile.user),
-                                tib_new$originFile.inner,
-                                tib_new$originFile.user)
-    if (nrow(tib) ==  nrow(tib_new)) {
-      tib = tib_new[,c("JOURNAL","journal_abbr","originFile")]
-    }else{
-      stop('erorr!!!')
+    for ( ii in seq_along(tib$JOURNAL)) {
+      for (jj in seq_along(usrabbr$JOURNAL)) {
+        if ( !is.na(tib$JOURNAL[ii]) & !is.na(usrabbr$JOURNAL[jj]) & tib$JOURNAL[ii] == usrabbr$JOURNAL[jj]) {
+          tib[ii,2:3] = usrabbr[jj,2:3]
+        }
+      }
     }
+    # tib_new = dplyr::left_join(tib,usrabbr,by=c('JOURNAL'='JOURNAL'),suffix=c(".inner",".user"))
+    # tib_new$journal_abbr = ifelse(is.na(tib_new$journal_abbr.user),
+    #                             tib_new$journal_abbr.inner,
+    #                             tib_new$journal_abbr.user)
+    # tib_new$originFile = ifelse(is.na(tib_new$originFile.user),
+    #                             tib_new$originFile.inner,
+    #                             tib_new$originFile.user)
+    # if (nrow(tib) ==  nrow(tib_new)) {
+    #   tib = tib_new[,c("JOURNAL","journal_abbr","originFile")]
+    # }else{
+    #   stop('erorr!!!')
+    # }
   }
   #########################################################
   #### If the abbreviation cannot be found,
