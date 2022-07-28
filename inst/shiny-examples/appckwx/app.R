@@ -25,7 +25,7 @@ clear_file = function(mypattern = '(.*\\.R$)|(.*\\.Rproj$)' ){
     },
     error = function(e) {
       # return a safeError if a parsing error occurs
-      print("出错啦")
+      print("error")
       clear_file()
       stop(safeError(e))
     }

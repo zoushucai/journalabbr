@@ -13,5 +13,5 @@ Depends:
     R (>= 4.0.0)
 Imports: data.table, stringr, stringi, dplyr, purrr, tibble, rlang, httr, shiny
 Suggests: testthat, tidyr, rclipboard, tinytex, DT,rmarkdown (>= 2.7), knitr (>= 1.33)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Date: 2022-04-23
