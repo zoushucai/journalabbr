@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 metadata
 .gitignore
+^\.github$
