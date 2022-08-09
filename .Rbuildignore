@@ -4,3 +4,8 @@ metadata
 .gitignore
 ^\.github$
 ^CRAN-SUBMISSION$
+^devtools_history\.R$
+^\.lintr$
+^LICENSE\.md$
+^cran-comments\.md$
+^README\.Rmd$

@@ -1,0 +1,93 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# journalabbr 
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+## Function
+
+Implementing journal abbreviation for the 'Journal' field in BibTex file.
+
+## Install
+
+```{r,eval=FALSE}
+# CRAN
+install.packages("journalabbr")
+
+# or 
+devtools::install_github("zoushucai/journalabbr")
+```
+
+## Require
+
+The format of the bib file is as follows:
+
+``` latex
+@***{****,
+  **** = {****},
+  **** = "*****",
+  *** = {{******}},
+  **** = {*****}}
+
+% or
+
+@***{****,
+  **** = {****},
+  **** = "*****",
+  *** = {{******}},
+  **** = {*****}
+  }
+  
+```
+
+Except for the `@`character line, the rest of the field lines must have an equal sign `=`
+
+## Use
+
+```{r}
+require(journalabbr)
+path0 <- system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
+temp <- abbr_bib(file = path0, out.file = tempfile(fileext = ".bib"))
+colnames(temp)
+
+path <- system.file("extdata", "testfile_2.bib", package = "journalabbr", mustWork = TRUE)
+temptab <- abbr_bib(file = path, out.file = tempfile(fileext = ".bib"))
+colnames(temptab)
+
+# add user csv
+csvpath <- system.file("extdata", "myabbr.csv", package = "journalabbr", mustWork = TRUE)
+temptab1 <- abbr_bib(file = path, out.file = tempfile(fileext = ".bib"), user.csv = csvpath)
+colnames(temptab1)
+
+# no return value
+abbr_bib_only_journal(file = path, out.file = tempfile(fileext = ".bib"), user.csv = csvpath)
+
+```
+
+or run shiny 
+
+```{r,eval=FALSE}
+journalabbr::run_example()
+```
+
+### Access internal data
+
+```{r}
+abbrtable = journalabbr:::abbrtable_sys
+colnames(abbrtable)
+```
+

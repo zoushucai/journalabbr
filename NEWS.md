@@ -1,6 +1,14 @@
-# journalabbr 0.3.2
+# journalabbr 0.4.0
 
-- Add `NEWS.md` 
+The underlying data has been reconstructed. Now, the `data.table` format is adopted.
+
+- Use `use_this` and `lintr` package to build the R package
+- Add `NEWS.md`, `cran-comments.md`
+- Add shiny: `journalabbr::run_example()`
+- Two main functions: `abbr_bib()` and `abbr_bib_only_journal()`, the other functions are auxiliary functions.
+
+
+
 
 
 
