@@ -13,9 +13,24 @@ knitr::opts_chunk$set(
 )
 ```
 
+```{r echo=FALSE, results="hide", message=FALSE}
+library("badger")
+```
+
 # journalabbr 
 
 <!-- badges: start -->
+```{r, echo = FALSE, results='asis'}
+cat(
+  badge_cran_checks("journalabbr"),
+	badge_cran_download("journalabbr", "grand-total", "green"),
+	badge_license(),
+	badge_github_actions()
+)
+```
+[![Codecov test coverage](https://codecov.io/gh/zoushucai/journalabbr/branch/master/graph/badge.svg)](https://app.codecov.io/gh/zoushucai/journalabbr?branch=master)
+[![CRAN status](https://www.r-pkg.org/badges/version/journalabbr)](https://CRAN.R-project.org/package=journalabbr)
+[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 <!-- badges: end -->
 
 ## Function

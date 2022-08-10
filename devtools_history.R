@@ -97,6 +97,21 @@ rhub::check_on_debian()
 rhub::check_for_cran()
 
 
+use_travis()
+use_travis_badge()
+use_lifecycle_badge()
+use_cran_badge()
+covr::package_coverage(type="all")# 本地查看代码覆盖率
+use_coverage() # 添加一个徽章到readme中, 以及会创建一个yml, 每次提交github都会检查代码覆盖率
+
+use_github_action("test-coverage")#检测 test的覆盖率
+
+# 创建一系列徽章
+use_cran_badge()
+use_lifecycle_badge("stable")
+use_lifecycle()
+
+devtools::build_readme()
 rm(list = ls())
 document()
 
@@ -112,3 +127,4 @@ kk = abbr_bib(file = "/Users/zsc/Desktop/rmd/weakfuzzyaik.bib",
 abbr_bib_only_journal(file = "/Users/zsc/Desktop/rmd/weakfuzzyaik.bib",
                       out.file = "/Users/zsc/Desktop/aa2.bib",
                       user.csv = '' )
+

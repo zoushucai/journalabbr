@@ -4,6 +4,20 @@
 # journalabbr
 
 <!-- badges: start -->
+
+[![CRAN
+checks](https://cranchecks.info/badges/summary/journalabbr)](https://cran.r-project.org/web/checks/check_results_journalabbr.html)
+[![](http://cranlogs.r-pkg.org/badges/grand-total/journalabbr?color=green)](https://cran.r-project.org/package=journalabbr)
+[![License: GPL (\>=
+3)](https://img.shields.io/badge/license-GPL%20(%3E=%203)-blue.svg)](https://cran.r-project.org/web/licenses/GPL%20(%3E=%203))
+[![R build
+status](https://github.com/zoushucai/journalabbr/workflows/R-CMD-check/badge.svg)](https://github.com/zoushucai/journalabbr/actions)
+[![Codecov test
+coverage](https://codecov.io/gh/zoushucai/journalabbr/branch/master/graph/badge.svg)](https://app.codecov.io/gh/zoushucai/journalabbr?branch=master)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/journalabbr)](https://CRAN.R-project.org/package=journalabbr)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 <!-- badges: end -->
 
 ## Function

@@ -17,7 +17,7 @@ The BibTeX file is read, parsed, tidied and written to a \code{data.table}.
 }
 \details{
 Read, parse and collate bibtex file to form a data.table.
-  Different BIB may produce different data.table columns.
+Different BIB may produce different data.table columns.
 }
 \examples{
 # Read from .bib file:

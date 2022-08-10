@@ -36,14 +36,14 @@ The first column is the full name of the journal and the second column is the jo
 }
 \value{
 {
-  output a new Bib file and return a \code{data.table} object.
+output a new Bib file and return a \code{data.table} object.
 }
 }
 \description{
 Input Bib file with complete journal, output a \code{.bib} file and return a data object.
 
 Input Bib file with complete journal, output a \code{.bib} file, this function only carries out
-  journal abbreviations, and the rest is output as it is.
+journal abbreviations, and the rest is output as it is.
 }
 \examples{
 require(journalabbr)
