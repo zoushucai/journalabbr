@@ -1,3 +1,7 @@
+# journalabbr 0.4.1
+
+update news.md and DESCRIPTION
+
 # journalabbr 0.4.0
 
 The underlying data has been reconstructed. Now, the `data.table` format is adopted.
