@@ -1,3 +1,8 @@
+# ournalabbr 0.4.2
+
+The built-in dataset was updated, the journal abbreviations for [this site](https://woodward.library.ubc.ca/woodward/research-help/journal-abbreviations/#jatop) were added, and the highest weights were set.
+
+
 # journalabbr 0.4.1
 
 update news.md and DESCRIPTION
