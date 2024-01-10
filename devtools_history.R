@@ -42,7 +42,7 @@ use_import_from("purrr",'map2')
 use_import_from("purrr",'map_chr')
 
 use_import_from("tidytable",'as_tidytable')
-use_import_from("tidytable",'enframe.')
+use_import_from("tidytable",'enframe')
 
 use_import_from("data.table",'fread')
 use_import_from("data.table",'as.data.table')
