@@ -26,6 +26,6 @@
 #' @importFrom stringr str_squish
 #' @importFrom stringr str_to_upper
 #' @importFrom tidytable as_tidytable
-#' @importFrom tidytable enframe.
+#' @importFrom tidytable enframe
 ## usethis namespace: end
 NULL

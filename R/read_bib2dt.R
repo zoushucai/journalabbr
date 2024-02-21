@@ -72,7 +72,7 @@ read_bib2dt <- function(file) {
     return(bib[x:y])
   }, x = from, y = to - 1, SIMPLIFY = FALSE)
 
-  dt <- tidytable::enframe.(itemslist, name = "fz_id", value = "fz_rawchar")
+  dt <- tidytable::enframe(itemslist, name = "fz_id", value = "fz_rawchar")
 
   dt$fz_char <- NA
   dt$fz_char <- map(dt$fz_rawchar, function(x) {
