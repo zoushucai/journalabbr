@@ -104,6 +104,9 @@ or run shiny online
 website: [https://zoushucai.shinyapps.io/shiny_cankaowenxian/](https://zoushucai.shinyapps.io/shiny_cankaowenxian/)
 
 
+- It needs to be manually pushed to `shinyapps.io`, and the implementation is also very simple. Simply click the mouse in `Rstudio` to operate it
+
+
 ### Access internal data
 
 ```{r}
