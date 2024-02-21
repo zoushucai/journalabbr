@@ -18,12 +18,7 @@
 #' dt2 <- read_bib2dt(file2)
 #' colnames(dt2)
 #'
-#' @testexamples
-#' expect_true(is.data.table(dt1))
-#' expect_true(is.data.table(dt2))
-#' expect_warning(read_bib2dt(file1),"Duplicate key in uploaded Bib file")
-#' expect_warning(read_bib2dt(file1),"NA value exists in Citation Key, please check the bib file")
-#' expect_warning(read_bib2dt(file2),"Duplicate key in uploaded Bib file")
+
 
 
 read_bib2dt <- function(file) {

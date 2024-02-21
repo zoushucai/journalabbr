@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 [![CRAN
-checks](https://cranchecks.info/badges/summary/journalabbr)](https://cran.r-project.org/web/checks/check_results_journalabbr.html)
+checks](https://badges.cranchecks.info/summary/journalabbr.svg)](https://cran.r-project.org/web/checks/check_results_journalabbr.html)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/journalabbr?color=green)](https://cran.r-project.org/package=journalabbr)
 [![License: GPL (\>=
 3)](https://img.shields.io/badge/license-GPL%20(%3E=%203)-blue.svg)](https://cran.r-project.org/web/licenses/GPL%20(%3E=%203))
@@ -64,7 +64,7 @@ an equal sign `=`
 
 ``` r
 require(journalabbr)
-#> Loading required package: journalabbr
+#> 载入需要的程辑包：journalabbr
 path0 <- system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
 temp <- abbr_bib(file = path0, out.file = tempfile(fileext = ".bib"))
 #> Warning in read_bib2dt(file): NA value exists in Citation Key, please check the

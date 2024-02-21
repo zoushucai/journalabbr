@@ -11,9 +11,6 @@
 #' abbrtable_user <- add_abbrtable(file = csvpath, header = FALSE, sep = ";")
 #' colnames(abbrtable_user)
 #'
-#' @testexamples
-#' expect_true(is.data.table(abbrtable_user))
-#'
 
 
 add_abbrtable <- function(file, ...) {

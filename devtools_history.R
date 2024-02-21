@@ -1,3 +1,7 @@
+library(usethis)
+library(devtools)
+
+
 file.edit("devtools_history.R") # 创建一个文件,
 usethis::use_build_ignore("devtools_history.R")   # 把这个文件进行忽略
 
@@ -35,7 +39,6 @@ lintr::lint_package()
 
 use_package("purrr")
 use_package("stringr")
-# use_package("roxytest")
 
 use_import_from("purrr",'map')
 use_import_from("purrr",'map2')
@@ -78,8 +81,8 @@ document()
 devtools::check(args = c('--as-cran'))
 devtools::check_rhub()
 
-#usethis::use_readme_rmd()
-use_testthat()
+# usethis::use_readme_rmd()
+usethis::use_testthat()
 roxygen2::roxygenise()
 devtools::document(roclets=c('rd', 'collate', 'namespace'))
 
@@ -111,10 +114,19 @@ use_cran_badge()
 use_lifecycle_badge("stable")
 use_lifecycle()
 
+#添加测试
+# ✖ add_abbrtable.R:14: @testexamples is not a known tag.
+# ✖ read_bib2dt.R:21: @testexamples is not a known tag.
+# ✖ replace_field.R:23: @testexamples is not a known tag.
+use_test("add_abbrtable.R")
+
+use_test("read_bib2dt")
+use_test("replace_field.R")
+
 devtools::build_readme()
 rm(list = ls())
 document()
-
+devtools::test()
 load_all()
 file = "/Users/zsc/Desktop/rmd/weakfuzzyaik.bib"
 out.file = "/Users/zsc/Desktop/aa3.bib"

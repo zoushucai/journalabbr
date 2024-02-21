@@ -241,7 +241,7 @@ ui <- fluidPage(
                   accept = c("text/csv", "text/comma-separated-values,text/plain", ".csl")
         ),
         fileInput("file3_bib", "Choose bib File(File coding: UTF-8)",
-                  accept = c("text/csv", "text/comma-separated-values,text/plain", ".bbl")
+                  accept = c("text/csv", "text/comma-separated-values,text/plain", ".bib")
         ),
         fluidRow(
           column(8,
