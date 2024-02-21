@@ -127,6 +127,10 @@ or run shiny
 journalabbr::run_example()
 ```
 
+or run shiny online
+
+website: <https://zoushucai.shinyapps.io/shiny_cankaowenxian/>
+
 ### Access internal data
 
 ``` r
