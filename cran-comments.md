@@ -8,12 +8,6 @@
 
 There were no ERRORs, WARNINGs and Notes.
 
-There is one NOTE that is only found on Windows (Server 2022, R-devel 64-bit):
-```
-* checking for detritus in the temp directory ... NOTE
-Found the following files/directories:
-  'lastMiKTeXException'
-```
 
 * This is a new release.
 

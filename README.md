@@ -6,18 +6,21 @@
 <!-- badges: start -->
 
 [![CRAN
-checks](https://badges.cranchecks.info/summary/journalabbr.svg)](https://cran.r-project.org/web/checks/check_results_journalabbr.html)
-[![](http://cranlogs.r-pkg.org/badges/grand-total/journalabbr?color=green)](https://cran.r-project.org/package=journalabbr)
-[![License: GPL (\>=
-3)](https://img.shields.io/badge/license-GPL%20(%3E=%203)-blue.svg)](https://cran.r-project.org/web/licenses/GPL%20(%3E=%203))
+status](https://www.r-pkg.org/badges/version/journalabbr)](https://CRAN.R-project.org/package=journalabbr)
+![r-universe](https://fastverse.r-universe.dev/badges/journalabbr)
+[![downloads](http://cranlogs.r-pkg.org/badges/grand-total/journalabbr?color=blue)](https://cran.r-project.org/package=journalabbr)
+[![CRAN RStudio mirror
+downloads](https://cranlogs.r-pkg.org/badges/last-month/journalabbr?color=blue)](https://github.com/zoushucai/journalabbr)
 [![R build
 status](https://github.com/zoushucai/journalabbr/workflows/R-CMD-check/badge.svg)](https://github.com/zoushucai/journalabbr/actions)
 [![Codecov test
-coverage](https://codecov.io/gh/zoushucai/journalabbr/branch/master/graph/badge.svg)](https://app.codecov.io/gh/zoushucai/journalabbr?branch=master)
+coverage](https://codecov.io/gh/zoushucai/journalabbr/branch/master/graph/badge.svg)](https://app.codecov.io/gh/zoushucai/journalabbr?branch=main)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/journalabbr)](https://CRAN.R-project.org/package=journalabbr)
 [![Lifecycle:
 stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
+[![License:
+GPL](https://img.shields.io/badge/license-GPL-blue.svg)](https://cran.r-project.org/web/licenses/GPL)
 <!-- badges: end -->
 
 ## Function

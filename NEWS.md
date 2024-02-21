@@ -7,11 +7,12 @@
 
 - Update rda,  run: `wget https://github.com/zoushucai/journalmerge/raw/main/R/sysdata.rda -O ./R/sysdata.rda`
 
-- Delete `roxytest` package 
+- Delete `roxytest` and `badger` package
 
 - Suggest R version>=4.3.2
 
 - Update the branch from master to main.
+
 
 
 # journalabbr 0.4.2

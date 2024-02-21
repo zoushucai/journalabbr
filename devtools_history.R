@@ -78,7 +78,7 @@ rm(list=ls())
 load_all()
 devtools::install()
 
-document()
+devtools::document()
 devtools::check(args = c('--as-cran'))
 devtools::check_rhub()
 
@@ -117,7 +117,7 @@ use_cran_badge()
 use_lifecycle_badge("stable")
 use_lifecycle()
 
-# add test code 
+# add test code
 use_test("add_abbrtable.R")
 use_test("read_bib2dt")
 use_test("replace_field.R")
