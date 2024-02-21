@@ -1,12 +1,12 @@
 ## Test environments
 
-- local aarch64-apple-darwin20 (64-bit), R version 4.2.1 (2022-06-23), Running under: macOS Monterey 12.4
-- Ubuntu Linux 20.04.1 LTS R-devel (on R-hub) 
+- local System Version: macOS 14.1.1 (23B81), R version 4.3.2, Running under: macOS 14.1.1 (m1, arm64)
+- local ubuntu Linux 22.04 LTS R-devel (64-bit), R version 4.3.2, Running under: wsl ubuntu 22.04.
 - Windows (devel and release)
 
 ## R CMD check results
 
-There were no ERRORs or WARNINGs.
+There were no ERRORs, WARNINGs and Notes.
 
 There is one NOTE that is only found on Windows (Server 2022, R-devel 64-bit):
 ```
