@@ -2,11 +2,11 @@ library(usethis)
 library(devtools)
 
 
-file.edit("devtools_history.R") # 创建一个文件,
-usethis::use_build_ignore("devtools_history.R")   # 把这个文件进行忽略
+file.edit("devtools_history.R") # to create a file
+usethis::use_build_ignore("devtools_history.R")   #  to ignore the file
 
 usethis::use_build_ignore(".lintr")
-file.edit(".lintr") # 创建一个文件,
+file.edit(".lintr") # to create a file
 
 
 
@@ -95,6 +95,7 @@ devtools::check(args = c('--as-cran'))
 devtools::check_win_devel()
 rhub::check()
 
+# check on different platforms
 rhub::check_on_windows()
 devtools::check_rhub()
 rhub::check_on_debian()
@@ -105,22 +106,19 @@ use_travis()
 use_travis_badge()
 use_lifecycle_badge()
 use_cran_badge()
-covr::package_coverage(type="all")# 本地查看代码覆盖率
-use_coverage() # 添加一个徽章到readme中, 以及会创建一个yml, 每次提交github都会检查代码覆盖率
+covr::package_coverage(type="all")# test coverage badge
+use_coverage() # add a badge to README.md
 
-use_github_action("test-coverage")#检测 test的覆盖率
+use_github_action("test-coverage") # test coverage action
 
-# 创建一系列徽章
+
+# to create badges
 use_cran_badge()
 use_lifecycle_badge("stable")
 use_lifecycle()
 
-#添加测试
-# ✖ add_abbrtable.R:14: @testexamples is not a known tag.
-# ✖ read_bib2dt.R:21: @testexamples is not a known tag.
-# ✖ replace_field.R:23: @testexamples is not a known tag.
+# add test code 
 use_test("add_abbrtable.R")
-
 use_test("read_bib2dt")
 use_test("replace_field.R")
 

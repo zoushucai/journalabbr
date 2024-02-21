@@ -32,7 +32,7 @@ Replace field \code{author}
 }
 \examples{
 csvpath <- system.file("extdata", "myabbr.csv", package = "journalabbr", mustWork = TRUE)
-abbrtable_user <- add_abbrtable(file = csvpath, header = FALSE, sep = ";")
+abbrtable_user <- add_abbrtable(file = csvpath, header = FALSE, sep = ",")
 colnames(abbrtable_user)
 
 file <- system.file("extdata", "testfile_2.bib", package = "journalabbr", mustWork = TRUE)
