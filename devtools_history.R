@@ -40,6 +40,7 @@ lintr::lint_package()
 use_package("purrr")
 use_package("stringr")
 
+
 use_import_from("purrr",'map')
 use_import_from("purrr",'map2')
 use_import_from("purrr",'map_chr')
