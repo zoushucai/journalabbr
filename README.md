@@ -63,61 +63,74 @@ an equal sign `=`
 
 ``` r
 require(journalabbr)
-#> 载入需要的程辑包：journalabbr
-path0 <- system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
-temp <- abbr_bib(file = path0, out.file = tempfile(fileext = ".bib"))
-#> Warning in read_bib2dt(file): NA value exists in Citation Key, please check the
-#> bib file
-#> Warning in read_bib2dt(file): 
-#> ====== Duplicate key in uploaded Bib file =======:
-#> Binmore2008
-#> Binmore2008
-#> BrandenburgerDekel1989
-#> Osborne1994
-#> ===============================================
-#> Warning in write_dt2bib(item_dt, outfile): NA value in CKEY or ITYPE field
-colnames(temp)
-#>  [1] "journal_lower" "journal_abbr"  "originFile"    "fz_id"        
-#>  [5] "fz_rawchar"    "fz_char"       "CKEY"          "ITYPE"        
-#>  [9] "TITLE"         "AUTHOR"        "ORGANIZATION"  "ADDRESS"      
-#> [13] "YEAR"          "URL"           "ABSTRACT"      "NOTE"         
-#> [17] "JOURNAL"       "VOLUME"        "NUMBER"        "PAGES"        
-#> [21] "MONTH"         "PUBLISHER"     "BOOKTITLE"     "CHAPTER"      
-#> [25] "EDITOR"        "SHORTTITLE"    "DOI"           "EDITION"      
-#> [29] "SCHOOL"        "TYPE"          "INSTITUTION"
-
-path <- system.file("extdata", "testfile_2.bib", package = "journalabbr", mustWork = TRUE)
-temptab <- abbr_bib(file = path, out.file = tempfile(fileext = ".bib"))
-#> Warning in read_bib2dt(file): 
-#> ====== Duplicate key in uploaded Bib file =======:
-#> meenakshi2019fuzzy
-#> xu2014ordinal
-#> ===============================================
-colnames(temptab)
-#>  [1] "journal_lower" "journal_abbr"  "originFile"    "fz_id"        
-#>  [5] "fz_rawchar"    "fz_char"       "CKEY"          "ITYPE"        
-#>  [9] "TITLE"         "AUTHOR"        "PUBLISHER"     "YEAR"         
-#> [13] "SHORTTITLE"    "VOLUME"        "PAGES"         "JOURNAL"      
-#> [17] "LANGUAGE"      "NUMBER"        "MONTH"         "URL"
-
-# add user csv
+#> Loading required package: journalabbr
+# 1. load abbrtable_user
 csvpath <- system.file("extdata", "myabbr.csv", package = "journalabbr", mustWork = TRUE)
-temptab1 <- abbr_bib(file = path, out.file = tempfile(fileext = ".bib"), user.csv = csvpath)
-#> Warning in read_bib2dt(file): 
-#> ====== Duplicate key in uploaded Bib file =======:
+abbrtable_user <- data.table::fread(file = csvpath, header = TRUE, sep = ",")
+abbrtable_user <- abbrtable_user[, lapply(.SD, stringr::str_squish)]
+colnames(abbrtable_user) <- c("journal_lower", "journal_abbr")
+abbrtable_user[, journal_lower := tolower(journal_lower)]
+
+# 2.read *.bib file
+file <- system.file("extdata", "testfile_2.bib", package = "journalabbr", mustWork = TRUE)
+dt <- read_bib2dt(file)
+#> Warning in read_bib2dt(file): ====== Duplicate key in uploaded Bib file =======:
 #> meenakshi2019fuzzy
 #> xu2014ordinal
 #> ===============================================
-colnames(temptab1)
-#>  [1] "journal_lower" "journal_abbr"  "originFile"    "fz_id"        
-#>  [5] "fz_rawchar"    "fz_char"       "CKEY"          "ITYPE"        
-#>  [9] "TITLE"         "AUTHOR"        "PUBLISHER"     "YEAR"         
-#> [13] "SHORTTITLE"    "VOLUME"        "PAGES"         "JOURNAL"      
-#> [17] "LANGUAGE"      "NUMBER"        "MONTH"         "URL"
 
-# no return value
-abbr_bib_only_journal(file = path, out.file = tempfile(fileext = ".bib"), user.csv = csvpath)
-#> NULL
+# 3. handle dt
+dm1 = replace_field(dt,
+                    oldfield = "JOURNAL",
+                    newfield = "JOURNAL",
+                    user_table = abbrtable_user,
+                    use_sys_table =TRUE,
+                    fun = NULL)
+myauthor = function(x){ gsub(" and ", " & ", x, perl = TRUE, ignore.case = TRUE) }
+dm2 = replace_field(dm1,
+                    oldfield = "AUTHOR",
+                    newfield = "AUTHOR",
+                    user_table = NULL,
+                    use_sys_table =FALSE,
+                    fun = myauthor)
+# 4. Write to .bib file:
+write_dt2bib(dm2, file = tempfile(fileext = ".bib"))
+
+print(head(dt)[, c("JOURNAL", "AUTHOR"), with = FALSE])
+#>                                     JOURNAL
+#>                                      <char>
+#> 1:                                     <NA>
+#> 2:                                     <NA>
+#> 3: European Journal of Operational Research
+#> 4:                   Fuzzy Sets and Systems
+#> 5:                                     <NA>
+#> 6:                            The R Journal
+#>                                                 AUTHOR
+#>                                                 <char>
+#> 1:            Osborne, Martin J. and Rubinstein, Ariel
+#> 2:                                       Meenakshi, AR
+#> 3:        Aguar{\\'o}n, Juan and {Moreno-Jim{\\'e}nez}
+#> 4: Xu, Yejun and Gupta, Jatinder N.D. and Wang, Huimin
+#> 5:                                       Meenakshi, AR
+#> 6:                                         Dianne Cook
+print(head(dm1)[, c("JOURNAL", "AUTHOR"), with = FALSE])
+#>               JOURNAL                                              AUTHOR
+#>                <char>                                              <char>
+#> 1:               <NA>            Osborne, Martin J. and Rubinstein, Ariel
+#> 2:               <NA>                                       Meenakshi, AR
+#> 3:               <NA>                                       Meenakshi, AR
+#> 4: Eur. J. Oper. Res.        Aguar{\\'o}n, Juan and {Moreno-Jim{\\'e}nez}
+#> 5:   Fuzzy Sets Syst. Xu, Yejun and Gupta, Jatinder N.D. and Wang, Huimin
+#> 6:   Fuzzy Sets Syst. Xu, Yejun and Gupta, Jatinder N.D. and Wang, Huimin
+print(head(dm2)[, c("JOURNAL", "AUTHOR"), with = FALSE])
+#>               JOURNAL                                          AUTHOR
+#>                <char>                                          <char>
+#> 1:               <NA>          Osborne, Martin J. & Rubinstein, Ariel
+#> 2:               <NA>                                   Meenakshi, AR
+#> 3:               <NA>                                   Meenakshi, AR
+#> 4: Eur. J. Oper. Res.      Aguar{\\'o}n, Juan & {Moreno-Jim{\\'e}nez}
+#> 5:   Fuzzy Sets Syst. Xu, Yejun & Gupta, Jatinder N.D. & Wang, Huimin
+#> 6:   Fuzzy Sets Syst. Xu, Yejun & Gupta, Jatinder N.D. & Wang, Huimin
 ```
 
 or run shiny

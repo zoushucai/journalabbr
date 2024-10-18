@@ -1,77 +1,74 @@
-#' @title Replace field \code{journal} with built-in data sets and user provided data sets.
+#' @title Replace or process a specified field in a data.table
 #'
-#' @param dt data.table, the object returned by the function \code{read_bib2dt}.
-#' @param abbrtable_user data.table, the object returned by the function \code{add_abbrtable}.
+#' @description
+#'  This function processes a specified field in a `data.table` by using a journal abbreviation table
+#' (either user-specified, system-provided, or both) to abbreviate journal names in the `oldfield`.
+#' Additionally, a custom function can be applied to the processed field if specified.
 #'
-#' @return data.table
-#' @rdname replace_field
+#' @param dt A `data.table`. The input data table that contains the field to be processed.
+#' @param oldfield A character string. The name of the field to be processed, typically in uppercase
+#' (e.g., "JOURNAL"). Must be a valid column name in `dt`.
+#' @param newfield A character string. The name of the new field where the processed result will be stored.
+#' If this field does not exist in `dt`, it will be created.
+#' @param user_table A `data.table`. Optional. A user-provided journal abbreviation table with at least
+#' two columns: `journal_lower` and `journal_abbr`. Defaults to `NULL`. If provided, it will be merged
+#' with the system abbreviation table if `use_sys_table = TRUE`.
+#' @param use_sys_table A logical. Whether to use the system-provided journal abbreviation table.
+#' Defaults to `TRUE`. If `TRUE`, the system abbreviation table is used alongside the user-provided one.
+#' @param fun A function. Optional. A custom function to apply to the processed field after abbreviation
+#' (if applicable). Defaults to `NULL`. The function should accept a column from `dt` as its first argument
+#' and return the processed values.
+#' @param ... Additional arguments passed to the custom function `fun`, if provided.
 #'
+#' @details
+#' If the `oldfield` is "JOURNAL", the function will attempt to apply journal abbreviations using the provided
+#' abbreviation table(s). The abbreviation process involves converting the journal names to lowercase and
+#' removing excess whitespace before matching against the abbreviation table.
+#'
+#' The `user_table` and `use_sys_table` parameters allow flexibility in choosing which abbreviation
+#' tables to use. If both are used, they will be merged, and duplicates will be removed.
+#'
+#' If a custom function is provided via `fun`, it will be applied to the processed field after any abbreviations.
+#'
+#' @return The function returns the modified `data.table` with the processed field stored in `newfield`.
 #' @export
+#' @importFrom rlang is_empty
+#' @example inst/example/replace_example.R
 #'
-#' @examples
-#' csvpath <- system.file("extdata", "myabbr.csv", package = "journalabbr", mustWork = TRUE)
-#' abbrtable_user <- add_abbrtable(file = csvpath, header = FALSE, sep = ",")
-#' colnames(abbrtable_user)
 #'
-#' file <- system.file("extdata", "testfile_2.bib", package = "journalabbr", mustWork = TRUE)
-#' dt <- read_bib2dt(file)
-#'
-#' newdt <- replace_field_journal(dt, abbrtable_user)
-#' newdt1 <- replace_field_author(dt, author.connect = "and")
-#' newdt2 <- replace_field_author(dt, author.connect = "&")
-#'
+replace_field <- function(dt, oldfield, newfield, user_table = NULL, use_sys_table = TRUE, fun = NULL, ...) {
+  stopifnot(is.data.table(dt))
+  stopifnot(is.character(oldfield) && length(oldfield) == 1)
+  stopifnot(is.character(newfield) && length(newfield) == 1)
+  stopifnot(oldfield %in% names(dt))
+  dt <- data.table::copy(dt)
+  # Create the abbreviation table
+  abbrtable <- get_abbrtable(user_table, use_sys_table)
 
-
-replace_field_journal <- function(dt, abbrtable_user) {
-  # internal data
-  if (!c("journal_lower" %in% colnames(dt))) {
-    dt$journal_lower <- str_squish(tolower(dt$JOURNAL))
-  } else {
-    dt$journal_lower <- str_squish(tolower(dt$journal_lower))
+  # If abbreviation table is provided, process the field
+  if (!is_empty(abbrtable)) {
+    # 只保留缩写表中的必要列，例如期刊名和缩写
+    abbrtable <- abbrtable[, c("journal_lower", "journal_abbr"), with = FALSE]
   }
 
-  abbrtable_sys_new <- abbrtable_sys[, lapply(.SD, stringi::stri_unescape_unicode)]
-  new_dt <- abbrtable_sys_new[dt, on = "journal_lower"]
-
-  # user data
-  if (!is.null(abbrtable_user)) {
-    for (i in seq_len(nrow(new_dt))) {
-      for (j in seq_len(nrow(abbrtable_user))) {
-        if (identical(new_dt$journal_lower[i], abbrtable_user$journal_lower[j])) {
-          new_dt$journal_abbr[i] <- abbrtable_user$journal_abbr[j]
-          new_dt$originFile[i] <- abbrtable_user$originFile[j]
-        }
-      }
-    }
+  # Handle JOURNAL field specifically
+  if ("JOURNAL" == oldfield && !is_empty(abbrtable)) {
+    dt <- process_journal(dt, oldfield, newfield, abbrtable)
   }
 
-  return(new_dt)
+  # Apply custom function if provided
+  if (!is_empty(fun)) {
+    dt[, (newfield) := fun(get(newfield), ...)]
+  }
+
+  return(dt)
 }
 
-
-
-
-
-#' @title Replace field \code{author}
-#'
-#' @param dt is data.table, the object returned by the function \code{read_bib2dt}.
-#' @param author.connect is character, what symbols are used to connect multiple authors, \code{'nothing','\\\\&',
-#'  '&', 'and'}, where \code{'nothing'} stand for do nothing(default).
-#'
-#' @return data.table
-#' @export
-#' @rdname replace_field
-
-replace_field_author <- function(dt, author.connect = c("nothing", "\\\\&", "&", "and")) {
-  connect_symbol <- match.arg(author.connect, choices = c("nothing", "\\\\&", "&", "and"))
-  if (connect_symbol != "nothing") {
-    rest_symbol <- setdiff(c("\\\\&", "&", "and"), connect_symbol)
-    s1 <- sprintf("(?<= )%s(?= )", rest_symbol[1])
-    dt$AUTHOR <- gsub(s1, connect_symbol, dt$AUTHOR, perl = TRUE, ignore.case = TRUE)
-
-    s2 <- sprintf("(?<= )%s(?= )", rest_symbol[2])
-    dt$AUTHOR <- gsub(s2, connect_symbol, dt$AUTHOR, perl = TRUE, ignore.case = TRUE)
-  }
-
+# Helper function to process journal abbreviation
+process_journal <- function(dt, oldfield, newfield, abbrtable) {
+  dt[, (newfield) := stringr::str_squish(tolower(dt[[oldfield]]))]
+  dt <- merge(dt, abbrtable, by.x = newfield, by.y = "journal_lower", all.x = TRUE, suffixes = c("", "_abbr"))
+  dt[, (newfield) := ifelse(is.na(get("journal_abbr")), dt[[oldfield]], get("journal_abbr"))]
+  dt[, c("journal_abbr") := NULL] # Remove temporary column
   return(dt)
 }

@@ -1,15 +1,26 @@
-test_that("Determine data type, Function replace_field_journal()", {
+test_that("Determine data type, Function replace_field()", {
 
   csvpath <- system.file("extdata", "myabbr.csv", package = "journalabbr", mustWork = TRUE)
-  abbrtable_user <- add_abbrtable(file = csvpath, header = FALSE, sep = ",")
-  colnames(abbrtable_user)
-
   file <- system.file("extdata", "testfile_2.bib", package = "journalabbr", mustWork = TRUE)
+
   dt <- read_bib2dt(file)
+  abbrtable_user <- get_abbrtable(user_table = csvpath, use_sys_table =TRUE)
 
-  newdt <- replace_field_journal(dt, abbrtable_user)
-  newdt1 <- replace_field_author(dt, author.connect = "and")
-  newdt2 <- replace_field_author(dt, author.connect = "&")
+  dm1 <- replace_field(dt,
+                      oldfield = "JOURNAL",
+                      newfield = "JOURNAL",
+                      user_table = csvpath,
+                      use_sys_table =TRUE,
+                      fun = NULL)
 
-  expect_true(is.data.table(newdt) && is.data.table(newdt1) &&  is.data.table(newdt2))
+
+  myauthor <- function(x){ gsub(" and ", " & ", x, perl = TRUE, ignore.case = TRUE) }
+  dm2 <- replace_field(dm1,
+                      oldfield = "AUTHOR",
+                      newfield = "AUTHOR",
+                      user_table = NULL,
+                      use_sys_table =FALSE,
+                      fun = myauthor)
+
+  expect_true(is.data.table(dm1) && is.data.table(dm2))
 })

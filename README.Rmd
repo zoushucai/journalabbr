@@ -68,22 +68,37 @@ Except for the `@`character line, the rest of the field lines must have an equal
 
 ```{r}
 require(journalabbr)
-path0 <- system.file("extdata", "testfile_1.bib", package = "journalabbr", mustWork = TRUE)
-temp <- abbr_bib(file = path0, out.file = tempfile(fileext = ".bib"))
-colnames(temp)
-
-path <- system.file("extdata", "testfile_2.bib", package = "journalabbr", mustWork = TRUE)
-temptab <- abbr_bib(file = path, out.file = tempfile(fileext = ".bib"))
-colnames(temptab)
-
-# add user csv
+# 1. load abbrtable_user
 csvpath <- system.file("extdata", "myabbr.csv", package = "journalabbr", mustWork = TRUE)
-temptab1 <- abbr_bib(file = path, out.file = tempfile(fileext = ".bib"), user.csv = csvpath)
-colnames(temptab1)
+abbrtable_user <- data.table::fread(file = csvpath, header = TRUE, sep = ",")
+abbrtable_user <- abbrtable_user[, lapply(.SD, stringr::str_squish)]
+colnames(abbrtable_user) <- c("journal_lower", "journal_abbr")
+abbrtable_user[, journal_lower := tolower(journal_lower)]
 
-# no return value
-abbr_bib_only_journal(file = path, out.file = tempfile(fileext = ".bib"), user.csv = csvpath)
+# 2.read *.bib file
+file <- system.file("extdata", "testfile_2.bib", package = "journalabbr", mustWork = TRUE)
+dt <- read_bib2dt(file)
 
+# 3. handle dt
+dm1 = replace_field(dt,
+                    oldfield = "JOURNAL",
+                    newfield = "JOURNAL",
+                    user_table = abbrtable_user,
+                    use_sys_table =TRUE,
+                    fun = NULL)
+myauthor = function(x){ gsub(" and ", " & ", x, perl = TRUE, ignore.case = TRUE) }
+dm2 = replace_field(dm1,
+                    oldfield = "AUTHOR",
+                    newfield = "AUTHOR",
+                    user_table = NULL,
+                    use_sys_table =FALSE,
+                    fun = myauthor)
+# 4. Write to .bib file:
+write_dt2bib(dm2, file = tempfile(fileext = ".bib"))
+
+print(head(dt)[, c("JOURNAL", "AUTHOR"), with = FALSE])
+print(head(dm1)[, c("JOURNAL", "AUTHOR"), with = FALSE])
+print(head(dm2)[, c("JOURNAL", "AUTHOR"), with = FALSE])
 ```
 
 or run shiny 

@@ -1,7 +1,7 @@
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
   "shiny", "stringr", "stringi", "data.table",
-  "rclipboard", "knitr", "rmarkdown", "purrr", "tidytable",
+  "rclipboard", "knitr", "rmarkdown", "purrr",
   "tinytex", "DT", "shinydashboard", "journalabbr"
 )
 

@@ -19,51 +19,39 @@ styler::style_file("metadata/combine_journal_lists.R")
 lintr::lint("metadata/combine_journal_lists.R")
 usethis::use_testthat()
 
+list.files("R/", pattern = "*.R")
+styler::style_file("R/bib2bib.R")
+lintr::lint("R/bib2bib.R")
+
+styler::style_file("R/get_abbrtable.R")
+lintr::lint("R/get_abbrtable.R")
+
+styler::style_file("R/get_delcolumns.R")
+lintr::lint("R/get_delcolumns.R")
 
 styler::style_file("R/read_bib2dt.R")
 lintr::lint("R/read_bib2dt.R")
 
-
-
-styler::style_file("R/add_abbrtable.R")
-lintr::lint("R/add_abbrtable.R")
-
 styler::style_file("R/replace_field.R")
 lintr::lint("R/replace_field.R")
 
-styler::style_file("R/abbr_bib.R")
-lintr::lint("R/abbr_bib.R")
+
+styler::style_file("R/write_dt2bib.R")
+lintr::lint("R/write_dt2bib.R")
+
+styler::style_file("R/bib2bib.R")
+lintr::lint("R/bib2bib.R")
+
 document()
 styler::style_pkg()
 lintr::lint_package()
 
 use_package("purrr")
 use_package("stringr")
+use_r("bib2bib.R")
 
+use_import_from("stringr",'str_detect')
 
-use_import_from("purrr",'map')
-use_import_from("purrr",'map2')
-use_import_from("purrr",'map_chr')
-
-use_import_from("tidytable",'as_tidytable')
-use_import_from("tidytable",'enframe')
-
-use_import_from("data.table",'fread')
-use_import_from("data.table",'as.data.table')
-use_import_from("data.table",'rbindlist')
-use_import_from("data.table",'merge.data.table')
-
-use_import_from("data.table",'is.data.table')
-use_import_from("data.table",'setnames')
-
-use_import_from("stringr",'str_squish')
-use_import_from("stringr",'str_replace_all')
-use_import_from("stringr",'str_extract')
-use_import_from("stringr",'str_to_upper')
-use_import_from("stringr",'str_split')
-use_import_from("stringr",'str_dup')
-use_import_from("stringr",'str_pad')
-use_import_from("stringr",'str_count')
 use_import_from("stringi",'stri_unescape_unicode')
 document()
 check()
@@ -89,8 +77,9 @@ devtools::document(roclets=c('rd', 'collate', 'namespace'))
 
 
 devtools::build_readme()
-
-document()
+devtools::load_all()
+devtools::document() #生成帮助文档
+help(write_dt2bib)  # 查看生成的帮助文档,
 devtools::check(args = c('--as-cran'))
 devtools::check_win_devel()
 rhub::check()
@@ -127,15 +116,5 @@ rm(list = ls())
 document()
 devtools::test()
 load_all()
-file = "/Users/zsc/Desktop/rmd/weakfuzzyaik.bib"
-out.file = "/Users/zsc/Desktop/aa3.bib"
-user.csv = ''
-author.connect = c("nothing", "\\\\&", "&", "and")
-kk = abbr_bib(file = "/Users/zsc/Desktop/rmd/weakfuzzyaik.bib",
-         out.file = "/Users/zsc/Desktop/aa3.bib",
-         user.csv = '' )
 
-abbr_bib_only_journal(file = "/Users/zsc/Desktop/rmd/weakfuzzyaik.bib",
-                      out.file = "/Users/zsc/Desktop/aa2.bib",
-                      user.csv = '' )
 

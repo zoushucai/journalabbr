@@ -1,3 +1,10 @@
+# journalabbr 0.4.4
+
+- remove `tidytable` package 
+- remove fun `replace_field_author` and `replace_field_journal` , add `replace_field`
+- remove fun `abbr_bib` and `abbr_bib_only_journal`
+- remove fun `add_abbrtable`
+- add fun `bib2bib`, `get_abbrtable`, `get_delcolumns`
 
 # journalabbr 0.4.3
 

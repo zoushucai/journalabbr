@@ -1,7 +1,7 @@
 Package: journalabbr
 Type: Package
 Title: Journal Abbreviations for BibTeX Documents
-Version: 0.4.3
+Version: 0.4.4
 Authors@R: c(
     person("ShuCai Zou",role =c("aut","cre"), email = "zscmoyujian@163.com"),
     person("Yu Chen", role ="aut", email = "chengyuxuezhe@163.com")
@@ -19,15 +19,13 @@ Imports:
     purrr (>= 1.0.0),
     httr (>= 1.4.0),
     shiny (>= 1.7.0),
-    tidytable (>= 0.11.0),
-    stringi (>= 1.7.0)
+    stringi (>= 1.7.0),
+    rlang(>= 1.0.0)
 Suggests: 
     testthat (>= 3.0.0),
     rmarkdown,
     knitr,
-    rclipboard,
     tinytex,
-    DT,
     covr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1

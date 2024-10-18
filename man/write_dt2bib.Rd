@@ -4,12 +4,22 @@
 \alias{write_dt2bib}
 \title{Export a BibTeX \code{data.table} to a .bib file.}
 \usage{
-write_dt2bib(dt, file = tempfile(fileext = ".bib"))
+write_dt2bib(
+  dt,
+  file = tempfile(fileext = ".bib"),
+  columns = get_delcolumns(),
+  indent = "\\t"
+)
 }
 \arguments{
 \item{dt}{\code{data.table}, in the format as returned by \code{\link{read_bib2dt}}.}
 
 \item{file}{character, file path to write the .bib file.}
+
+\item{columns}{character vector, names of the columns to exclude from the output. a default list of columns will
+be used from \code{\link{get_delcolumns}}.}
+
+\item{indent}{character, the indentation to use for the .bib file. Default is \code{"\\t"}}
 }
 \value{
 \code{file} as a character string, invisibly.
@@ -25,5 +35,4 @@ bib <- read_bib2dt(file)
 
 # Write to .bib file:
 write_dt2bib(bib, file = tempfile(fileext = ".bib"))
-
 }
