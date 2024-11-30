@@ -1,0 +1,17 @@
+---
+title: "Untitled"
+format: 
+  pdf:
+    documentclass: ctexart   # ctexart article
+    pdf-engine: xelatex
+    keep-tex: true
+    colorlinks: true
+editor: source
+bibliography: "MEMIO_default.bib"
+csl: "navigation_default.csl"
+link-citations: true
+---
+
+
+
+
