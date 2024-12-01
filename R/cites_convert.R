@@ -13,7 +13,6 @@
 #' @return the `single_cites_convert` function return a character string with citations converted to the specified format.
 #'
 #' @export
-#' @example inst/example/cites_convert_example.R
 #' @rdname cites_convert
 #'
 

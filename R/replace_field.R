@@ -34,7 +34,7 @@
 #' @export
 #' @importFrom rlang is_empty
 #' @example inst/example/replace_example.R
-#'
+#' @rdname replace_field
 #'
 replace_field <- function(dt, oldfield, newfield, user_table = NULL, use_sys_table = TRUE, fun = NULL, ...) {
   stopifnot(is.data.table(dt))

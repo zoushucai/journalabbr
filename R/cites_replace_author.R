@@ -12,7 +12,6 @@
 #' Excessive whitespace in the resulting text is removed to ensure formatting consistency.
 #'
 #' If no matching citation commands are found, the input text is returned unchanged.
-#' @example inst/example/cites_replace_author_example.R
 #' @rdname cites_replace_author
 #' @importFrom stringr str_trim
 #' @export
@@ -76,7 +75,6 @@ cites_replace_author = function(tex){
 #' Excessive whitespace in the resulting text is removed for formatting consistency.
 #'
 #' If no matching citation commands are found, the input text is returned unchanged.
-#' @example inst/example/cites_replace_author_example.R
 #' @rdname cites_replace_author
 #' @importFrom stringr str_trim
 #' @export
@@ -109,7 +107,6 @@ single_replace_number <- function(text, latex_prefix=c("cite", "upcite", "citep"
 #' @details
 #' This function applies \code{single_replace_number} to each line or section of the LaTeX document,
 #' ensuring that citations like \code{(\\cite\{...\})} are transformed back into \code{\\cite\{...\}}.
-#' @example inst/example/cites_replace_author_example.R
 #' @rdname cites_replace_author
 #' @seealso \code{\link{single_replace_number}}
 #' @export

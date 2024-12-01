@@ -11,8 +11,9 @@
 #' to match the order specified in \code{citesall}. If a citation contains only one key, it remains unchanged.
 #'
 #' Matched citation keys not found in \code{citesall} are excluded from the reordered result.
-#' @example inst/example/cites_replace_order_example.R
 #' @export
+#' @rdname cites_replace_order
+#'
 single_replace_order <- function(text, citesall=NULL, latex_prefix=c("cite", "upcite", "citep", "citet")) {
 
   if (is.null(citesall)) {
@@ -61,6 +62,7 @@ single_replace_order <- function(text, citesall=NULL, latex_prefix=c("cite", "up
 #' @seealso \code{\link{single_replace_order}}, \code{\link{cites_extract}}
 #' @export
 #' @rdname cites_replace_order
+#'
 cites_replace_order = function(tex, citesall=NULL){
   if (is.null(citesall)) {
     citesall = cites_extract(tex)

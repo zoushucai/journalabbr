@@ -7,10 +7,10 @@
 #' @details
 #' The function identifies citation commands such as \code{cite}, \code{upcite}, \code{citep}, and \code{citet}.
 #' It extracts the content within braces following these commands, and splits multiple keys separated by commas.
-#' @example inst/example/cites_extract_example.R
 #' @importFrom stringr str_extract_all str_trim
 #' @export
 #' @rdname cites_extract
+#'
 
 single_cites_extract = function(text){
   ## 提取tex中的所有引用
@@ -41,6 +41,8 @@ single_cites_extract = function(text){
 #' @example inst/example/cites_extract_example.R
 #' @importFrom stringr str_trim
 #' @export
+#' @rdname cites_extract
+#'
 cites_extract = function(tex){
   cites =stringr::str_trim(unlist(lapply(tex, single_cites_extract)))
   cites = unique(cites)
