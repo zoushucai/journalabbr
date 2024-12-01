@@ -77,9 +77,11 @@ devtools::document(roclets=c('rd', 'collate', 'namespace'))
 
 
 devtools::build_readme()
+
 devtools::load_all()
 devtools::document() #生成帮助文档
-help(write_dt2bib)  # 查看生成的帮助文档,
+help(cites_extract)  # 查看生成的帮助文档,
+help(cites_replace_author)
 devtools::check(args = c('--as-cran'))
 devtools::check_win_devel()
 rhub::check()

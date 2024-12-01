@@ -2,7 +2,7 @@
 # Convert the LaTeX citations in the text to Markdown format
 text = "This is a citation \\upcite{key1,key2} and \\citep{key3-a }.
         paper \\cite{key3-b, cky3-c}, paper \\citet{key4-a, cky4-b}"
-converted_md = single_convert_citations(text, tex2md = TRUE)
+converted_md = single_cites_convert(text, tex2md = TRUE)
 print(converted_md)
 
 
@@ -13,11 +13,11 @@ print(converted_md)
 text = "This is a citation [@key1; @key2] and [@key3-a].
         paper [@key3-b; @cky3-c], paper [@key4-a; @cky4-b]"
 # defalut prefix "cite"
-converted_latex = single_convert_citations(text, tex2md = FALSE)
+converted_latex = single_cites_convert(text, tex2md = FALSE)
 print(converted_latex)
 
 # Convert Markdown citations to LaTeX using a custom prefix
-custom_prefix = single_convert_citations(text, tex2md = FALSE, latex_prefix = "upcite")
+custom_prefix = single_cites_convert(text, tex2md = FALSE, latex_prefix = "upcite")
 print(custom_prefix)
 
 
@@ -29,7 +29,7 @@ text_vector =c("This is a citation [@key1; @key2] and [@key3-a].",
         "This is a citation3 [@key1; @key2] and [@key3-a].")
 
 # vector version
-vector_latex = convert_citations(text_vector, tex2md = FALSE)
+vector_latex = cites_convert(text_vector, tex2md = FALSE)
 print(vector_latex)
 
 
@@ -41,23 +41,7 @@ text_vector2= c("This is a citation \\upcite{key1,key2} and \\citep{key3-a }",
          "",
          "This is a citation \\upcite{key1,key2} and \\cite{key3-a }")
 # Convert the vector of LaTeX citations to Markdown format
-vector_md = convert_citations(text_vector2, tex2md = TRUE)
+vector_md = cites_convert(text_vector2, tex2md = TRUE)
 print(vector_md)
 
 
-
-texfile = "C:\\Users\\zscmm\\Documents\\GitHub\\journalabbr\\weak.tex"
-tex = readLines(texfile)
-newtex = cites_order_replace(tex)
-texfile2 = "C:\\Users\\zscmm\\Documents\\GitHub\\journalabbr\\weak2.tex"
-writeLines(newtex, con = texfile2)
-
-
-texfile = "C:\\Users\\zscmm\\Documents\\GitHub\\journalabbr\\weak2-author.tex"
-tex = readLines(texfile)
-text = tex[157]
-print(text)
-
-newtex = cite_replace_author(tex)
-texfile2 = "C:\\Users\\zscmm\\Documents\\GitHub\\journalabbr\\weak2-back.tex"
-writeLines(newtex, con = texfile2)

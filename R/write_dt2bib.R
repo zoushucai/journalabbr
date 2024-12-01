@@ -25,12 +25,12 @@ write_dt2bib <- function(dt, file = tempfile(fileext = ".bib"), columns = get_de
   rest_cols <- setdiff(upper_cols, c("CKEY", "ITYPE"))
 
   # 警告 NA 值
-  if (any(is.na(dt$ITYPE)) || any(is.na(dt$CKEY))) {
+  if (any(is.na(dt[["ITYPE"]])) || any(is.na(dt[["CKEY"]]))) {
     warning("NA value in CKEY or ITYPE field. These entries will be removed: ", which(is.na(dt$ITYPE) | is.na(dt$CKEY)))
   }
 
   # 删除 NA 值的条目
-  dt <- dt[!(is.na(dt$ITYPE) | is.na(dt$CKEY)), ]
+  dt <- dt[!(is.na(dt[["ITYPE"]]) | is.na(dt[["CKEY"]])), ]
   # 设置缩进符号
   indent_str <- ifelse(is.na(indent) || is_empty(indent), "", indent)
   # 构建 BibTeX 文本, 把所有的字段按照固定的格式写入
@@ -43,8 +43,8 @@ write_dt2bib <- function(dt, file = tempfile(fileext = ".bib"), columns = get_de
   }
   # 尝试删除最后一个逗号
   dt$bibtex <- gsub(",\n$", "", dt$bibtex, perl = TRUE)
-  # 添加最后一个右大括号
-  dt$bibtex <- paste0(dt$bibtex, "\n}")
+  # 添加最后一个右大括号 dt$bibtex <- paste0(dt$bibtex, "\n}")
+  dt[['bibtex']] <- paste0(dt[['bibtex']], "\n}")
 
   # 把dt$bibtex 拼接起来写入文件
   bibtxt <- paste0(dt$bibtex, collapse = "\n\n")

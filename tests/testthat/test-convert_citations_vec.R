@@ -21,7 +21,7 @@ test_that("conversion works for convert_citations_vec()", {
   )
 
   # Perform the conversion
-  converted_md = convert_citations_vec(text_latex, tex2md = TRUE)
+  converted_md = cites_convert(text_latex, tex2md = TRUE)
 
   # Check if the converted output matches expected output
   expect_equal(converted_md, expected_md)
@@ -45,7 +45,7 @@ test_that("conversion works for convert_citations_vec()", {
   )
 
   # Perform the conversion
-  converted_latex = convert_citations_vec(text_md, tex2md = FALSE, latex_prefix = "upcite")
+  converted_latex = cites_convert(text_md, tex2md = FALSE, latex_prefix = "upcite")
 
   # Check if the converted output matches expected output
   expect_equal(converted_latex, expected_latex)

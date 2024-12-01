@@ -95,14 +95,41 @@ ui <- fluidPage(
              helpText("Note: The final result may need to be fine-tuned."),
              dataTableOutput(outputId = "jouranl_abbr")
     ),
-    tabPanel("Style 1",
+    tabPanel("Style",
              helpText("Note: The final result may need to be fine-tuned.", br() ),
              verbatimTextOutput("out_is_clstype1"),
              uiOutput("out_style1_clip"),
              verbatimTextOutput("out_style1")
     ),
+    tabPanel("Cite bib",
+             helpText("The key exist in the .tex file"),
+             fluidRow(
+               column(9, p("Cite bib"), wellPanel(
+                 uiOutput("bib01yinyongclip"),
+                 verbatimTextOutput("bib01yinyong"),
+               )),
+               column(3, p("Cite key"), wellPanel(
+                 uiOutput("key01yinyongclip"),
+                 verbatimTextOutput("key01yinyong")
+               ))
+             )
+    ),
     tabPanel("SessionInfo",
              verbatimTextOutput("out_runenvir")
+    ),
+    #创建一个新的选项卡 --- 展示清除按钮
+    tabPanel("Clear",
+             helpText("Note: Clear all files"),
+             fluidRow(
+               column(6, wellPanel(
+                 actionButton("showButton", "Show files"),
+                 verbatimTextOutput("showButton")
+               )),
+               column(6, wellPanel(
+                 actionButton("clearButton", "Clear all files"),
+                 verbatimTextOutput("clearButton")
+               ))
+             )
     )
   )
 )
@@ -167,23 +194,32 @@ server <- function(input, output) {
       }
     )
 
-    newbib_dt <- read_bib2dt(fixed_bibfile, encoding = "UTF-8")
-    return(newbib_dt)
+    #提取bib文件中的全部数据
+    bibdt <- read_bib2dt(fixed_bibfile, encoding = "UTF-8")
+
+    #只提取 tex中引用的 ckey
+    citesall_dt = data.table("CKEY" = ckey)
+    bibdt0 = merge.data.table(citesall_dt, bibdt, by = "CKEY", all.x = TRUE, sort = FALSE)
+
+    return(list("bibdt" = bibdt, "bibdt0" = bibdt0))
   })
 
+
+  # 编译 qmd 文件 to tex 文件
   compileqmd <- reactive({
-    newbib_dt <- randomVals()
+    bibdt <- randomVals()$bibdt
     progress <- shiny::Progress$new()
     on.exit(progress$close())
     progress$set(message = "Calculating, please wait...", value = 0)
     # Convert Rmd files to latex files by pandoc
     quarto::quarto_render(output_qmd, output_format = "latex")
-    return(newbib_dt)
+    return(bibdt)
   })
 
 
+  #从输出的tex文件中提取数据，返回一个数据框
   get_citedt <- reactive({
-    newbib_dt = compileqmd()
+    bibdt = compileqmd()
     # 1. 读取 tex 文件
     doc = read_tex(output_tex)
 
@@ -257,10 +293,10 @@ server <- function(input, output) {
 
     # 捕捉警告信息
     warning_info = capture.output({
-      newbib_dt = compileqmd()
+      bibdt = compileqmd()
     })
 
-    if (length(newbib_dt) > 1 & !is_empty(newbib_dt)) {
+    if (length(bibdt) > 1 & !is_empty(bibdt)) {
       return("no warning")
     }else{
       return(warning_info)
@@ -274,29 +310,75 @@ server <- function(input, output) {
     tex_cite_style1()
   })
   output$out_style1_clip <- renderUI({
-    rclipButton(inputId = "out_style1_clip", label = "style1 Copy", clipText = tex_cite_style1(), icon = icon("clipboard"))
+    rclipButton(inputId = "out_style1_clip", label = "style Copy", clipText = tex_cite_style1(), icon = icon("clipboard"))
   })
   output$out_is_clstype1 <- renderText({
     dt = get_citedt()
     if(dt[["isnum"]][1] == 1){
-      return("The reference style is a numeric style.")
+      return("numeric style.")
     }else{
-      return("The reference style is an author-year style.")
+      return("author-year style.")
     }
   })
+  # #######################################################
+
+  # #######################################################
+  output$key01yinyong <- renderText({
+      bibdt0 = randomVals()$bibdt0
+      CKEY = bibdt0$CKEY
+      paste(CKEY, collapse = "\n")
+  })
+
+  output$bib01yinyong <- renderText({
+
+
+    bibdt0 = randomVals()$bibdt0
+    write_dt2bib(bibdt0, file = "tempckey.bib")
+    bib = readLines("tempckey.bib", encoding = "UTF-8")
+    # 删除临时文件
+    file.remove("tempckey.bib")
+    paste(bib, collapse = "\n")
+  })
+
+
+  ######################### Clear all files ###############
+  output$out_clear_after <- renderPrint({
+    files = list.files(recursive = TRUE)
+    if (length(files) > 0) {
+      return(files)
+    } else {
+      return("No files in the directory")
+    }
+  })
+
+  output$clearButton <- eventReactive(input$clearButton, {
+    clear_file()
+    files = list.files(recursive = TRUE)
+    now_time = Sys.time()
+    files_str = paste0("Now the files in the directory are:\n\n", now_time, "\n\n",
+                       paste(files, collapse = "\n"))
+    return(files_str)
+  })
+  output$showButton <- eventReactive(input$showButton, {
+    files = list.files(recursive = TRUE)
+    files_str = paste0("Show the files in the directory:\n\n", Sys.time(), "\n\n",
+                       paste(files, collapse = "\n"))
+    return(files_str)
+  })
+
 
   ######################### Output journal abbreviation comparison table -- begin ###############
   output$jouranl_abbr <- renderDataTable(
     {
-      newbib_dt <- randomVals() # return a list
-      if (is_empty(newbib_dt)) {
+      bibdt <- randomVals()$bibdt # return a list
+      if (is_empty(bibdt)) {
         temp <- data.frame("NOTE" = "No corresponding abbreviation was found in the whole bib file!!!")
         return(temp)
       } else {
         col <- c("CKEY", "JOURNAL")
-        stopifnot(all(col %in% colnames(newbib_dt)))
-        temp_dt <- newbib_dt[, col, with = F]
-        return(as.data.frame(temp_dt))
+        stopifnot(all(col %in% colnames(bibdt)))
+        tempdt <- bibdt[, col, with = F]
+        return(as.data.frame(tempdt))
       }
     },
     options = list(pageLength = 100)

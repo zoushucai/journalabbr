@@ -10,12 +10,14 @@
 #' @param tex2md Logical; if TRUE, converts from LaTeX to Markdown; if FALSE, converts from Markdown to LaTeX.
 #' @param latex_prefix A character vector of LaTeX citation prefixes to use.
 #' Defaults to c("cite", "upcite", "citep", "citet").
-#' @return the `single_convert_citations` function return a character string with citations converted to the specified format.
+#' @return the `single_cites_convert` function return a character string with citations converted to the specified format.
 #'
 #' @export
-#' @example inst/example/latex2md_example.R
+#' @example inst/example/cites_convert_example.R
+#' @rdname cites_convert
 #'
-single_convert_citations <- function(text, pattern=NULL, tex2md = TRUE, latex_prefix=c("cite", "upcite", "citep", "citet")) {
+
+single_cites_convert <- function(text, pattern=NULL, tex2md = TRUE, latex_prefix=c("cite", "upcite", "citep", "citet")) {
   stopifnot(is.character(text), length(text) == 1, is.character(pattern) || is.null(pattern) )
   if (is.null(pattern)) {
     pattern <- if (tex2md) {
@@ -60,15 +62,15 @@ single_convert_citations <- function(text, pattern=NULL, tex2md = TRUE, latex_pr
 
 #' @title Convert a vector of citations between formats
 #' @description
-#' the `convert_citations` function applies `single_convert_citations` to each element of the input vector.
+#' the `cites_convert` function applies `single_cites_convert` to each element of the input vector.
 #' @param x A character vector containing texts with citations.
-#' @param ... Additional arguments passed to \code{single_convert_citations}.
-#' @return the `convert_citations` function  return a character vector with citations converted to the specified format.
+#' @param ... Additional arguments passed to \code{single_cites_convert}.
+#' @return the `cites_convert` function  return a character vector with citations converted to the specified format.
 #'
-#' @rdname single_convert_citations
+#' @rdname cites_convert
 #' @export
-#' @example inst/example/latex2md_example.R
+#' @example inst/example/cites_convert_example.R
 #'
-convert_citations <- function(x, ...) {
-  sapply(x, single_convert_citations, ..., USE.NAMES=F)
+cites_convert <- function(x, ...) {
+  sapply(x, single_cites_convert, ..., USE.NAMES=F)
 }
