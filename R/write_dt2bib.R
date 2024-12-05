@@ -25,12 +25,12 @@ write_dt2bib <- function(dt, file = tempfile(fileext = ".bib"), columns = get_de
   rest_cols <- setdiff(upper_cols, c("CKEY", "ITYPE"))
 
   # 警告 NA 值
-  if (any(is.na(dt[["ITYPE"]])) || any(is.na(dt[["CKEY"]]))) {
+  if (any(is.na(dt$ITYPE)) || any(is.na(dt$CKEY))) {
     warning("NA value in CKEY or ITYPE field. These entries will be removed: ", which(is.na(dt$ITYPE) | is.na(dt$CKEY)))
   }
 
   # 删除 NA 值的条目
-  dt <- dt[!(is.na(dt[["ITYPE"]]) | is.na(dt[["CKEY"]])), ]
+  dt <- dt[!(is.na(dt$ITYPE) | is.na(dt$CKEY)), ]
   # 设置缩进符号
   indent_str <- ifelse(is.na(indent) || is_empty(indent), "", indent)
   # 构建 BibTeX 文本, 把所有的字段按照固定的格式写入

@@ -323,21 +323,40 @@ server <- function(input, output) {
   # #######################################################
 
   # #######################################################
-  output$key01yinyong <- renderText({
-      bibdt0 = randomVals()$bibdt0
-      CKEY = bibdt0$CKEY
-      paste(CKEY, collapse = "\n")
+
+
+  text_cite_key <- reactive({
+    bibdt0 = randomVals()$bibdt0
+    CKEY = bibdt0$CKEY
+    return(paste(CKEY, collapse = "\n"))
   })
-
-  output$bib01yinyong <- renderText({
-
-
+  text_cite_bib <- reactive({
     bibdt0 = randomVals()$bibdt0
     write_dt2bib(bibdt0, file = "tempckey.bib")
     bib = readLines("tempckey.bib", encoding = "UTF-8")
     # 删除临时文件
     file.remove("tempckey.bib")
-    paste(bib, collapse = "\n")
+    return(paste(bib, collapse = "\n"))
+  })
+  # 输出到界面
+
+  output$key01yinyong <- renderText({
+    text_cite_key()
+
+  })
+  output$bib01yinyong <- renderText({
+    text_cite_bib()
+  })
+
+  #输出到剪切板
+  output$key01yinyongclip <- renderUI({
+    rclipButton(inputId = "key01yinyongclip", label = "key Copy", clipText = text_cite_key(), icon = icon("clipboard"))
+  })
+
+
+
+  output$bib01yinyongclip <- renderUI({
+    rclipButton(inputId = "bib01yinyongclip", label = "bib Copy", clipText = text_cite_bib(), icon = icon("clipboard"))
   })
 
 
@@ -395,6 +414,10 @@ server <- function(input, output) {
     ))
   })
   ######################### sessionInfo  ###############
+  ## 退出时清除文件
+  onStop(function() {
+    clear_file()
+  })
 }
 
 

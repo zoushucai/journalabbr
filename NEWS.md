@@ -3,6 +3,7 @@
 
 - add fun `bib2bib`, `get_abbrtable`, `get_delcolumns`
 - add fun `cites_*` and `single_cites_*`
+- add fun `tex_funs` 
 - simplify shiny app
 - remove `tidytable` package 
 - remove fun `replace_field_author` and `replace_field_journal` , add `replace_field`

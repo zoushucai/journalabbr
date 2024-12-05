@@ -65,27 +65,27 @@ print(custom_prefix)
 
 
 # A vector of texts with Markdown citations
-text_vector =c("This is a citation [@key1; @key2] and [@key3-a].",
+tex =c("This is a citation [@key1; @key2] and [@key3-a].",
         "This is a citation2 [@key1; @key2] and [@key3-a].",
         "this is no citation",
         "",
         "This is a citation3 [@key1; @key2] and [@key3-a].")
 
 # vector version
-vector_latex = cites_convert(text_vector, tex2md = FALSE)
-print(vector_latex)
+tex = cites_convert(tex, tex2md = FALSE)
+print(tex)
 
 
 
 # Another vector of texts containing LaTeX citations
-text_vector2= c("This is a citation \\\\upcite{key1,key2} and \\\\citep{key3-a }",
+tex2= c("This is a citation \\\\upcite{key1,key2} and \\\\citep{key3-a }",
          "This is a citation \\\\citet{key1,key2} and \\\\citet{key3-a }",
          "this is no citation",
          "",
          "This is a citation \\\\upcite{key1,key2} and \\\\cite{key3-a }")
 # Convert the vector of LaTeX citations to Markdown format
-vector_md = cites_convert(text_vector2, tex2md = TRUE)
-print(vector_md)
+tex2 = cites_convert(tex2, tex2md = TRUE)
+print(tex2)
 
 
 }

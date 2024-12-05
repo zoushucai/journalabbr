@@ -21,6 +21,20 @@ clear_file <- function(pattern = "(.*\\.R$)|(.*\\.Rproj$)") {
       delete_dir <- setdiff(now_dir, old_dir)
       files_to_remove <- delete_dir[!file_test("-d", delete_dir)] # 过滤非目录文件
       file.remove(files_to_remove) # 一次性删除文件
+      # 清空 fixed_qmdfile 和 fixed_bibfile 以及 output_qmd
+      # file.remove(fixed_clsfile, fixed_qmdfile, fixed_bibfile, output_qmd)
+      if (file.exists(fixed_clsfile)) {
+        file.remove(fixed_clsfile)
+      }
+      if (file.exists(fixed_qmdfile)) {
+        file.remove(fixed_qmdfile)
+      }
+      if (file.exists(fixed_bibfile)) {
+        file.remove(fixed_bibfile)
+      }
+      if (file.exists(output_qmd)) {
+        file.remove(output_qmd)
+      }
     },
     error = function(e) {
       # return a safeError if a parsing error occurs
