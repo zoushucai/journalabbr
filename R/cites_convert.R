@@ -71,5 +71,5 @@ single_cites_convert <- function(text, pattern=NULL, tex2md = TRUE, latex_prefix
 #' @example inst/example/cites_convert_example.R
 #'
 cites_convert <- function(x, ...) {
-  sapply(x, single_cites_convert, ..., USE.NAMES=F)
+  unlist(lapply(x, single_cites_convert, ...))
 }

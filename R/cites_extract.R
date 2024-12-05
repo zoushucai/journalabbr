@@ -13,16 +13,13 @@
 #'
 
 single_cites_extract = function(text){
-  ## 提取tex中的所有引用
   latex_prefix=c("cite", "upcite", "citep", "citet")
-  # 提取tex中的所有引用
   pattern <- sprintf("(?<=\\\\(%s)\\{)([^}]+)(?=\\})", paste(latex_prefix, collapse = "|"))
 
   cites = stringr::str_trim(unlist(str_extract_all(text, pattern)))
   if(length(cites) == 0){
     return(NULL)
   }
-  #按照逗号分隔
   cites = stringr::str_trim(unlist(strsplit(cites, ",")))
   return(cites)
 }

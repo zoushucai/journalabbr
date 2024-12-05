@@ -31,9 +31,7 @@ get_abbrtable <- function(user_table = NULL, use_sys_table = TRUE) {
     return(NULL)
   }
 
-  # 如果提供了 user_table，则检查其类型并处理
   if (!is_empty(user_table)) {
-    # 如果 user_table 是一个字符串且表示有效的文件路径，则读取文件
     if (is.character(user_table)) {
       if (file.exists(user_table)) {
         user_table <- data.table::fread(user_table, header = TRUE)
@@ -41,29 +39,22 @@ get_abbrtable <- function(user_table = NULL, use_sys_table = TRUE) {
         stop("The provided user_table file path does not exist.")
       }
     } else if (is.data.frame(user_table)) {
-      # 如果 user_table 是 data.frame，则转换为 data.table
       user_table <- data.table::as.data.table(user_table)
     } else if (!is.data.table(user_table)) {
-      # 如果 user_table 既不是文件路径，也不是 data.frame 或 data.table，则报错
       stop("user_table must be a file path, data.frame, or data.table")
     }
 
-    # 检查 user_table 是否包含所需的列：journal_lower 和 journal_abbr
     if (!all(c("journal_lower", "journal_abbr") %in% colnames(user_table))) {
       stop("user_table must contain 'journal_lower' and 'journal_abbr' columns")
     }
 
-    # 保留需要的列并清理 journal_lower 列：去除多余空格并将其转换为小写
     user_table <- user_table[, c("journal_lower", "journal_abbr"), with = FALSE]
     user_table <- user_table[, "journal_lower" := stringr::str_squish(tolower(get("journal_lower")))]
   }
 
-  # 处理系统缩写表
   sys_table <- NULL
   if (use_sys_table) {
-    ### 1. 直接加载
     sys_table <- abbrtable_sys[, c("journal_lower", "journal_abbr"), with = FALSE]
-    ### 2. 通过判断,然后再加载
     # if (exists("abbrtable_sys", where = "package:journalabbr")) {
     #   abbrtable_sys <- get("abbrtable_sys", envir = asNamespace("journalabbr"))
     #   sys_table <- abbrtable_sys[, c("journal_lower", "journal_abbr"), with = FALSE]
@@ -73,7 +64,6 @@ get_abbrtable <- function(user_table = NULL, use_sys_table = TRUE) {
     # }
   }
 
-  # 合并用户表和系统表
   abbrtable <- data.table::rbindlist(list(user_table, sys_table))
   abbrtable <- abbrtable[!duplicated(abbrtable, by = "journal_lower")]
 

@@ -31,8 +31,7 @@ single_replace_author <- function(text, latex_prefix=c("cite", "upcite", "citep"
   for (i in seq_along(matched_texts)) {
     text <- gsub(matched_texts[i], paste(" (", matched_texts[i], ")", sep = ""), text, fixed = TRUE)
   }
-  # 把多余的空格去掉
-  text = gsub(" +", " ", text)
+  text = gsub("(?<=\\S)\\s+(?=\\S)", " ", text, perl = TRUE)
 
   return(text)
 }
@@ -92,8 +91,7 @@ single_replace_number <- function(text, latex_prefix=c("cite", "upcite", "citep"
     new_text  = gsub("\\s*\\)$", "", new_text)
     text <- gsub(matched_texts[i], new_text, text, fixed = TRUE)
   }
-  # 把多余的空格去掉
-  text = gsub(" +", " ", text)
+  text = gsub("(?<=\\S)\\s+(?=\\S)", " ", text, perl = TRUE)
   return(text)
 }
 

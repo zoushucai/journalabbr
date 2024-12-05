@@ -79,14 +79,14 @@ devtools::document(roclets=c('rd', 'collate', 'namespace'))
 devtools::build_readme()
 
 devtools::load_all()
-devtools::document() #生成帮助文档
-help(cites_extract)  # 查看生成的帮助文档,
+devtools::document()
+help(cites_extract)
 help(cites_replace_author)
 devtools::check(args = c('--as-cran'))
 devtools::check_win_devel()
 rhub::check()
 
-# check on different platforms
+
 rhub::check_on_windows()
 devtools::check_rhub()
 rhub::check_on_debian()

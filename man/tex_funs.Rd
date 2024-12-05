@@ -33,17 +33,7 @@ This function takes a vector of LaTeX-formatted strings and applies the \code{si
 function to each string to standardize spacing throughout the document.
 }
 \details{
-The function performs the following operations:
-\enumerate{
-\item Removes special "zero-width" spaces.
-\item Removes multiple spaces between non-space characters and replaces them with a single space.
-\item Removes spaces before punctuation (e.g., commas, periods).
-\item Handles LaTeX-style \verb{\\left(} and \verb{\\right)} by removing spaces around them.
-\item Adds spaces after certain punctuation marks (e.g., comma, period).
-\item Removes trailing spaces at the end of the string.
-\item Handles LaTeX math symbols like \code{=} and \code{^} to ensure correct spacing.
-\item Skips lines with "@" or lines starting with "\%" to prevent unwanted formatting.
-}
+see function \code{single_add_space} source code for details.
 }
 \examples{
 tex =c("This is a citation,and.",

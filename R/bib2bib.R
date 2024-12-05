@@ -35,7 +35,7 @@ bib2bib <- function(file,
                     use_sys_table = TRUE,
                     fun = NULL,
                     ...) {
-  # 2. 处理 JOURNAL 字段
+  # 2. handle JOURNAL field
   dt <- read_bib2dt(file)
   dt <- replace_field(dt,
     oldfield = "JOURNAL",
@@ -46,7 +46,7 @@ bib2bib <- function(file,
   )
 
 
-  # 3. 处理 AUTHOR 字段（如果提供了函数）
+  # 3. handle AUTHOR field (if function provided)
   if (!is_empty(fun)) {
     dt <- replace_field(dt,
       oldfield = "AUTHOR",
@@ -57,7 +57,7 @@ bib2bib <- function(file,
     )
   }
 
-  # 4. 将处理后的数据写入 .bib 文件
+  # 4. write the processed data to a new .bib file
   write_dt2bib(dt, file = out.file)
 
   message("Processing complete. Output saved to: ", out.file)

@@ -33,9 +33,8 @@ single_replace_order <- function(text, citesall=NULL, latex_prefix=c("cite", "up
     if(length(refs) == 1){
       return( paste0(sprintf("\\%s{", latex_prefix[1]), refs, "}"))
     }
-    # 按照cites_order的顺序排列
-    refs_order = refs[match(citesall, refs, nomatch = 0)]
 
+    refs_order = refs[match(citesall, refs, nomatch = 0)]
     refs_order = paste(refs_order, collapse = ", ")
     paste0(sprintf("\\%s{", latex_prefix[1]), refs_order, "}")
   })

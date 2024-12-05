@@ -47,7 +47,7 @@ replace_field <- function(dt, oldfield, newfield, user_table = NULL, use_sys_tab
 
   # If abbreviation table is provided, process the field
   if (!is_empty(abbrtable)) {
-    # 只保留缩写表中的必要列，例如期刊名和缩写
+    # only keep necessary columns from the abbreviation table, e.g., journal name and abbreviation
     abbrtable <- abbrtable[, c("journal_lower", "journal_abbr"), with = FALSE]
   }
 

@@ -13,12 +13,12 @@
 #' @example inst/example/read_example.R
 #'
 read_bib2dt <- function(file, encoding = "UTF-8") {
-  # 检查文件路径是否为字符类型
+
   if (!is.character(file)) {
     stop("Invalid file path: Non-character supplied.", call. = FALSE)
   }
 
-  # 如果是 URL，尝试读取该 URL
+
   if (grepl("http://|https://|www.", file)) {
     tryCatch(
       {
@@ -29,67 +29,65 @@ read_bib2dt <- function(file, encoding = "UTF-8") {
       }
     )
   } else {
-    # 如果是本地文件路径，检查文件是否可读
     if (as.numeric(file.access(file, mode = 4)) != 0) {
       stop("Invalid file path: File is not readable.", call. = FALSE)
     }
   }
 
-  ### 读取 bib 文件并返回 tibble 格式
+
   ################################################
-  ## 1. 读取 bib 文件并提取字段
+  ## 1. read the file
   ################################################
   bib <- readLines(file, encoding = encoding)
-  bib <- str_squish(bib) # 去除每行多余空格
+  bib <- str_squish(bib)
 
-  # 删除 JabRef 特定的注释
   temp <- grep("^@Comment\\{jabref-meta: databaseType:bibtex;\\}$", bib, perl = TRUE)
   if (length(temp) != 0) {
     warning('This file is exported from "JabRef" and we will automatically remove the "JabRef" tag.
             tag: @Comment{jabref-meta: databaseType:bibtex;}')
-    bib[temp] <- "" # 将 JabRef 标签内容置空
+    bib[temp] <- ""
   }
-  rm(temp) # 删除该变量, 释放内存
-  ###### 删除注释 ########################################
-  # 1. 删除注释行 （不处理文本中的注释, 感觉很少有人这样写）
+  rm(temp)
+  ###############################################
+  # 1. remove comments
   bib <- bib[!str_detect(bib, "^%")]
   bib <- bib[bib != ""]
   #########################################################
-  ########### 2.  处理 Bib 文件条目 #####################
+  ########### 2. Process Bib file entries #############
   #########################################################
-  from <- which(str_extract(bib, "[:graph:]") == "@") # 查找每个条目开始的行号
-  to <- c(from[-1] - 1, length(bib)) # 查找每个条目结束的行号
+  # find the start and end of each entry
+  from <- which(str_extract(bib, "[:graph:]") == "@")
+  to <- c(from[-1] - 1, length(bib))
   if (length(from) == 0L) {
     stop("There are no available references, please check the bib file.")
   }
 
-  # 提取每个条目
+  # extract each item
   itemslist <- mapply(function(x, y) {
     return(bib[x:y])
   }, x = from, y = to, SIMPLIFY = FALSE)
 
-  # 删除每个条目中的空行
+  # remove empty lines in each item
   itemslist <- map(itemslist, function(item) {
     item <- str_squish(item)
     item <- item[item != ""]
     return(item)
   })
-  # 计算每个条目的行数
+  # calculate the number of lines in each item
   itemslist_len <- map_int(itemslist, length)
-  # 如果条目行数小于5，则发出警告并删除
+  # if any item has less than 5 lines, remove it and issue a warning
   n <- 5
   if (any(itemslist_len < n)) {
     warning(str_glue("Some entries have less than {n} lines, these entries will be removed:"), immediate. = TRUE)
     for (i in itemslist[itemslist_len < n]) {
-      # 打印 list
       cat(i, sep = "\n")
     }
     cat("=========================================\n")
   }
-  # 删除行数小于5的条目
+  # remove items with less than 5 lines
   itemslist <- itemslist[itemslist_len >= n]
 
-  # 如果存在无效的条目，则发出警告并删除
+  # if any item is not valid, remove it and issue a warning
   checkresult <- map_lgl(itemslist, checkitem_valid)
   if (any(!checkresult)) {
     warning("Some entries are not valid BibTeX entries, these entries will be removed:", immediate. = TRUE)
@@ -99,13 +97,14 @@ read_bib2dt <- function(file, encoding = "UTF-8") {
     }
     cat("=========================================\n")
   }
-  # 删除无效的条目
+  # remove invalid items
   itemslist <- itemslist[checkresult]
 
 
-  # 将每个条目的所有字段提取出来
+  # extract fields from each item
   itemslist_fields <- map(itemslist, extract_fields)
-  # 将所有条目的字段合并为一个数据框
+
+    # combine all items into a data.table
   dt <- rbindlist(itemslist_fields, use.names = TRUE, fill = TRUE)
 
   # Check if the CKEY is repeated after removing NA
@@ -124,7 +123,7 @@ read_bib2dt <- function(file, encoding = "UTF-8") {
 #' @title Check if BibTeX item is valid
 #' @description This function checks if a given BibTeX entry is valid by ensuring it follows the correct format.
 #' A valid BibTeX entry should:
-#' 1. The first line should match the format: @TYPE{CITATION_KEY,
+#' 1. The first line should match the format: \code{@TYPE{CITATION_KEY},
 #' 2. The second to second-last lines should be key-value pairs in the format: key = value,
 #' 3. The last line should be a closing brace: }
 #' @param item A character vector representing a single BibTeX entry, where each element is a line from the entry.
@@ -149,10 +148,9 @@ checkitem_valid <- function(item) {
   lastline <- item[length(item)]
   if (!str_detect(lastline, "^\\}")) {
     if (str_detect(lastline, "\\}$")) {
-      # 统计{ 和} 的数量
-      open_braces_count <- str_count(lastline, "\\{") # 统计 { 的数量
-      close_braces_count <- str_count(lastline, "\\}") # 统计 } 的数量
-      # 判断 } 的数量是否比 { 多 1
+      # count the number of { and }
+      open_braces_count <- str_count(lastline, "\\{")
+      close_braces_count <- str_count(lastline, "\\}")
       if (close_braces_count - open_braces_count != 1) {
         return(FALSE)
       }
@@ -178,9 +176,7 @@ checkitem_valid <- function(item) {
 extract_fields <- function(item, check = FALSE) {
   if (check) {
     if (!checkitem_valid(item)) {
-      # 提示警告信息
       warning("The provided item is not valid. Returning an empty list.")
-      # 返回空列表
       return(list())
     }
   }
@@ -194,10 +190,9 @@ extract_fields <- function(item, check = FALSE) {
   n <- length(item)
   lastline <- item[n]
   if (!str_detect(lastline, "^\\}") && str_detect(lastline, "\\}$")) {
-    # 统计{ 和} 的数量
-    open_braces_count <- str_count(lastline, "\\{") # 统计 { 的数量
-    close_braces_count <- str_count(lastline, "\\}") # 统计 } 的数量
-    # 判断 } 的数量是否比 { 多 1
+    # count the number of { and }
+    open_braces_count <- str_count(lastline, "\\{")
+    close_braces_count <- str_count(lastline, "\\}")
     if (close_braces_count - open_braces_count == 1) {
       lastline <- gsub("\\}$", "", lastline, perl = TRUE)
       item[n] <- lastline
