@@ -1,6 +1,6 @@
 library(testthat)
 
-test_that("conversion works for convert_citations_vec()", {
+test_that("conversion works for cites_convert()", {
 
   # Test input for LaTeX to Markdown conversion
   text_latex = c(
